@@ -35,6 +35,33 @@ export default function InvoiceSystemPage() {
         </div>
       </section>
 
+      {/* Demo Video */}
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              See It In Action
+            </h2>
+            <p className="text-gray-400">
+              Watch a 3-minute demo of our Invoice Management System
+            </p>
+          </div>
+          <div className="relative rounded-xl overflow-hidden shadow-2xl">
+            <video 
+              controls 
+              poster="/demo-video/poster.jpg"
+              className="w-full aspect-video bg-black"
+            >
+              <source src="/demo-video/invoice-demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className="text-center text-gray-500 mt-4 text-sm">
+            Features: Invoice creation • Payment tracking • Expense management • Partner commissions
+          </p>
+        </div>
+      </section>
+
       {/* Key Features */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
