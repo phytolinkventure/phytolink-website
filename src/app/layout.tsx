@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Phyto Link Venture - Business Solutions",
   description: "Professional business solutions including Invoice Management System with LHDN e-Invoice integration for Malaysian businesses.",
+  icons: { icon: "/logo.jpg", apple: "/logo.jpg" },
 };
 
 export default function RootLayout({
@@ -18,6 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/logo.jpg" />
+      </head>
       <body className={inter.className}>
         <Navbar />
         <main className="min-h-screen">

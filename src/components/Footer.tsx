@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -7,9 +8,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-bold text-white mb-4">
-              🌿 Phyto Link Venture
-            </h3>
+            <div className="flex items-center gap-3 mb-4">
+              <Image src="/logo.jpg" alt="Phyto Link Venture" width={48} height={48} className="rounded-lg" />
+              <h3 className="text-2xl font-bold text-white">Phyto Link Venture</h3>
+            </div>
             <p className="text-gray-400 mb-4">
               Empowering Malaysian businesses with modern, compliant solutions. 
               Our Invoice Management System features native LHDN e-Invoice integration.
