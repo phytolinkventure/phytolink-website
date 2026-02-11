@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0d1117;--bg2:#111620;--bg3:#151925;--bg4:#1a1f2e;--border:#1e2738;--border2:#2a3040;--text:#e8ecf1;--text2:#8a919e;--text3:#5b6b82;--accent:#4fc3f7;--green:#66bb6a;--orange:#ffb74d;--red:#ef5350;--purple:#ce93d8;--blue:#64b5f6;--green2:#81c784}
+:root{--bg:#0d1117;--bg2:#111620;--bg3:#151925;--bg4:#1a1f2e;--border:#1e2738;--border2:#2a3040;--text:#e8ecf1;--text2:#8a919e;--text3:#5b6b82;--accent:#4fc3f7;--green:#66bb6a;--orange:#ffb74d;--red:#ef5350;--purple:#ce93d8;--blue:#64b5f6;--green2:#81c784;--teal:#4db6ac}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 .header{background:linear-gradient(135deg,#0d1117,#151d2b,#0d1117);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:12px}
 .header-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4fc3f7,#7c4dff);display:flex;align-items:center;justify-content:center;font-size:16px}
@@ -42,9 +42,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .field select{cursor:pointer}
 .field select option{background:var(--bg4)}
 .field .hint{font-size:10px;color:var(--text3);margin-top:3px}
-.dividend-box{background:#ffb74d10;border:1px solid #ffb74d33;border-radius:10px;padding:10px 14px;margin-bottom:16px}
-.dividend-title{font-size:11px;font-weight:700;color:var(--orange);margin-bottom:6px}
-.dividend-info{font-size:10px;color:var(--text2);line-height:1.5}
+.info-box{border-radius:10px;padding:10px 14px;margin-bottom:16px}
+.info-box.orange{background:#ffb74d10;border:1px solid #ffb74d33}
+.info-box.teal{background:#4db6ac10;border:1px solid #4db6ac33}
+.info-title{font-size:11px;font-weight:700;margin-bottom:6px}
+.info-title.orange{color:var(--orange)}.info-title.teal{color:var(--teal)}
+.info-text{font-size:10px;color:var(--text2);line-height:1.5}
 .quick-targets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .quick-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .quick-btn.active-green{border-color:var(--green);background:#66bb6a18;color:var(--green)}
@@ -86,6 +89,9 @@ tr.alt{background:#151d2b33}
 .savings-card.current .amt{color:var(--text)}
 .footer{margin-top:16px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.6}
 .savings-desc{padding:14px 18px 8px;font-size:13px;color:var(--text2)}
+.bonus-months-grid{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.bonus-month-btn{padding:4px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:600;cursor:pointer;transition:all .2s}
+.bonus-month-btn.active{border-color:var(--teal);background:#4db6ac20;color:var(--teal)}
 @media(max-width:768px){.sidebar{position:fixed;z-index:10;height:calc(100vh - 65px);top:65px;left:0}.sidebar.closed{left:-320px}.main{padding:16px 12px}.stats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -96,7 +102,7 @@ tr.alt{background:#151d2b33}
   <div class="header-icon">📊</div>
   <div>
     <h1>KWSP Projection Calculator</h1>
-    <div class="header-sub" id="headerSub">EPF + i-Invest • Starting Feb 2026 • 11 months remaining this year</div>
+    <div class="header-sub" id="headerSub"></div>
   </div>
 </div>
 
@@ -104,33 +110,33 @@ tr.alt{background:#151d2b33}
   <div class="sidebar" id="sidebar">
     <div class="sidebar-inner">
       <div class="section-label red">🔘 Features</div>
-      <div class="toggle-group">
-        <div class="toggle-row">
-          <button class="toggle-btn on" id="tog_iinvest" onclick="toggleFeature('enableIInvest')"><div class="toggle-dot"></div></button>
-          <div><div class="toggle-label on" id="lbl_iinvest">i-Invest (MIS)</div><div class="toggle-desc">Enable Members Investment Scheme transfers and tracking</div></div>
-        </div>
-        <div class="toggle-row">
-          <button class="toggle-btn on" id="tog_extra" onclick="toggleFeature('enableExtra')"><div class="toggle-dot"></div></button>
-          <div><div class="toggle-label on" id="lbl_extra">Extra Monthly Top-Up</div><div class="toggle-desc">Additional voluntary contribution to Akaun Persaraan</div></div>
-        </div>
-        <div class="toggle-row">
-          <button class="toggle-btn on" id="tog_salary" onclick="toggleFeature('enableSalaryIncrement')"><div class="toggle-dot"></div></button>
-          <div><div class="toggle-label on" id="lbl_salary">Annual Salary Increment</div><div class="toggle-desc">Contribution grows yearly with salary increase</div></div>
-        </div>
-        <div class="toggle-row">
-          <button class="toggle-btn off" id="tog_dividend" onclick="toggleFeature('lastYearDividend')"><div class="toggle-dot"></div></button>
-          <div><div class="toggle-label off" id="lbl_dividend">Last Year Dividend Credited</div><div class="toggle-desc">Has EPF already credited last year's dividend into your balance?</div></div>
-        </div>
-      </div>
+      <div class="toggle-group" id="toggleGroup"></div>
 
-      <div id="dividendBox" class="dividend-box">
-        <div class="dividend-title">💡 Dividend Not Yet Credited</div>
-        <div class="dividend-info" style="margin-bottom:8px">Your balances will be adjusted with an estimated dividend before projection starts.</div>
+      <!-- Dividend box -->
+      <div id="dividendBox" class="info-box orange">
+        <div class="info-title orange">💡 Dividend Not Yet Credited</div>
+        <div class="info-text" style="margin-bottom:8px">Balances adjusted with estimated dividend before projection.</div>
         <div class="field">
           <label>Est. Dividend Rate</label>
           <div class="input-wrap"><input type="number" id="in_dividendRate" value="5.50" step="0.1" min="0" max="15" onchange="updateCfg('lastYearDividendRate',parseFloat(this.value))"><span class="suffix">%</span></div>
         </div>
-        <div class="dividend-info" id="dividendPreview"></div>
+        <div class="info-text" id="dividendPreview"></div>
+      </div>
+
+      <!-- Bonus box -->
+      <div id="bonusBox" class="info-box teal">
+        <div class="info-title teal">🎁 Bonus EPF Contribution</div>
+        <div class="info-text" style="margin-bottom:8px">EPF is contributed on bonus. Bonus amount grows with salary increment.</div>
+        <div class="field">
+          <label>Bonus (Months of Salary)</label>
+          <div class="input-wrap"><input type="number" id="in_bonusMonths" value="2" step="0.5" min="0.5" max="12" onchange="updateCfg('bonusMonths',parseFloat(this.value))"><span class="suffix">months</span></div>
+          <div class="hint" id="bonusHint"></div>
+        </div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Bonus Paid In</label>
+          <div class="bonus-months-grid" id="bonusMonthGrid"></div>
+          <div class="hint" style="margin-top:6px">Click to select month(s) when bonus is paid. EPF from bonus is split equally across selected months.</div>
+        </div>
       </div>
 
       <div class="section-label blue">⚙ Configuration</div>
@@ -167,7 +173,7 @@ tr.alt{background:#151d2b33}
     <div class="tabs" id="tabsRow"></div>
     <div id="content"></div>
     <div class="footer">
-      <strong style="color:var(--text2)">⚠ Disclaimer:</strong> Projection tool for educational purposes only. Actual returns may vary. EPF dividends are not guaranteed. i-Invest returns depend on fund performance. Basic Savings thresholds revised every 5 years by KWSP. Contribution split: 75% Akaun 1, 15% Akaun 2, 10% Akaun 3. First year calculates from your selected starting month.
+      <strong style="color:var(--text2)">⚠ Disclaimer:</strong> Projection tool for educational purposes only. Actual returns may vary. EPF dividends are not guaranteed. i-Invest returns depend on fund performance. Basic Savings thresholds revised every 5 years by KWSP. Contribution split: 75% Akaun 1, 15% Akaun 2, 10% Akaun 3. Bonus EPF contribution uses same split ratio. First year calculates from your selected starting month.
     </div>
   </div>
 </div>
@@ -178,8 +184,23 @@ for(let a=56;a<=75;a++)BASIC_SAVINGS[a]=a<=60?203000+(a-55)*Math.floor((270000-2
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmt=n=>`RM ${n.toLocaleString()}`;
 
-let cfg={startAge:25,startMonth:2,akaun1:32500,akaun2:21000,akaun3:440,iInvest:31500,monthlyContrib:1500,monthlyExtra:1000,salaryIncrement:.05,epfReturn:.05,investReturn:.10,target:1300000,transferFrequency:6,enableIInvest:true,enableExtra:true,enableSalaryIncrement:true,lastYearDividend:false,lastYearDividendRate:5.50};
+let cfg={
+  startAge:25,startMonth:2,akaun1:32500,akaun2:21000,akaun3:440,iInvest:31500,
+  monthlyContrib:1500,monthlyExtra:1000,salaryIncrement:.05,epfReturn:.05,investReturn:.10,
+  target:1300000,transferFrequency:6,
+  enableIInvest:true,enableExtra:true,enableSalaryIncrement:true,
+  lastYearDividend:false,lastYearDividendRate:5.50,
+  enableBonus:true,bonusMonths:2,bonusPaidMonths:[12]
+};
 let currentTab="chart",chart=null,results=[],reachedAge=null,dividendApplied={a1:0,a2:0,a3:0};
+
+const FEATURES=[
+  {key:'enableIInvest',label:'i-Invest (MIS)',desc:'Enable Members Investment Scheme transfers and tracking',icon:'📈'},
+  {key:'enableExtra',label:'Extra Monthly Top-Up',desc:'Additional voluntary contribution to Akaun Persaraan',icon:'💰'},
+  {key:'enableSalaryIncrement',label:'Annual Salary Increment',desc:'Contribution grows yearly with salary increase',icon:'📊'},
+  {key:'enableBonus',label:'Annual Bonus',desc:'EPF contributed on bonus salary (same split ratio)',icon:'🎁'},
+  {key:'lastYearDividend',label:'Last Year Dividend Credited',desc:'Has EPF already credited last year\'s dividend?',icon:'🏦'},
+];
 
 function runProjection(){
   let a1=cfg.akaun1,a2=cfg.akaun2,a3=cfg.akaun3;
@@ -192,31 +213,56 @@ function runProjection(){
   }
   results=[];reachedAge=null;
   let contrib=cfg.monthlyContrib,extra=cfg.enableExtra?cfg.monthlyExtra:0;
+  let bonusContrib=cfg.enableBonus?cfg.monthlyContrib*cfg.bonusMonths:0;
   const mEpf=cfg.epfReturn/12,mInv=cfg.investReturn/12;
   const mFirst=12-(cfg.startMonth-1);
   let age=cfg.startAge,year=2026,totalM=0;
 
+  const bonusPaidMonths=cfg.enableBonus?cfg.bonusPaidMonths:[];
+  const bonusPerPaidMonth=bonusPaidMonths.length>0?1/bonusPaidMonths.length:0;
+
   const snap=(ml)=>{
     const total=a1+a2+a3+inv;
-    results.push({age,year,akaun1:Math.round(a1),akaun2:Math.round(a2),akaun3:Math.round(a3),iInvest:Math.round(inv),total:Math.round(total),basicSavings:BASIC_SAVINGS[age]||BASIC_SAVINGS[75],monthlyContrib:Math.round(contrib+(cfg.enableExtra?extra:0)),monthLabel:ml});
+    results.push({age,year,akaun1:Math.round(a1),akaun2:Math.round(a2),akaun3:Math.round(a3),iInvest:Math.round(inv),total:Math.round(total),basicSavings:BASIC_SAVINGS[age]||BASIC_SAVINGS[75],monthlyContrib:Math.round(contrib+(cfg.enableExtra?extra:0)),monthLabel:ml,bonusContrib:Math.round(bonusContrib)});
     if(total>=cfg.target&&!reachedAge)reachedAge=age;
   };
   snap(MONTHS[cfg.startMonth-1]);
 
   for(let y=0;y<(75-cfg.startAge+1);y++){
     const mths=y===0?mFirst:12;
+    const startCalMonth=y===0?cfg.startMonth:1;
+
     for(let m=0;m<mths;m++){
-      a1+=contrib*.75+(cfg.enableExtra?extra:0);a2+=contrib*.15;a3+=contrib*.10;
+      const calMonth=startCalMonth+m;
+
+      a1+=contrib*.75+(cfg.enableExtra?extra:0);
+      a2+=contrib*.15;
+      a3+=contrib*.10;
+
+      if(cfg.enableBonus&&bonusPaidMonths.includes(calMonth)){
+        const bContrib=bonusContrib*bonusPerPaidMonth;
+        a1+=bContrib*.75;
+        a2+=bContrib*.15;
+        a3+=bContrib*.10;
+      }
+
       a1*=(1+mEpf);a2*=(1+mEpf);a3*=(1+mEpf);
       if(cfg.enableIInvest)inv*=(1+mInv);
       totalM++;
+
       if(cfg.enableIInvest&&totalM%cfg.transferFrequency===0&&totalM>0){
         const bs=BASIC_SAVINGS[age]||BASIC_SAVINGS[75];
         const el=(a1-bs)*.30;
         if(el>=1000){a1-=el;inv+=el}
       }
     }
-    if(cfg.enableSalaryIncrement){contrib*=(1+cfg.salaryIncrement);if(cfg.enableExtra)extra*=(1+cfg.salaryIncrement)}
+
+    if(cfg.enableSalaryIncrement){
+      contrib*=(1+cfg.salaryIncrement);
+      if(cfg.enableExtra)extra*=(1+cfg.salaryIncrement);
+      if(cfg.enableBonus)bonusContrib=contrib*cfg.bonusMonths;
+    }
+
     age++;year++;
     snap("Jan");
     if(reachedAge&&age>reachedAge+3)break;
@@ -230,38 +276,36 @@ function toggleSidebar(){
   document.getElementById('toggleBtn').textContent=sb.classList.contains('closed')?'⚙':'✕';
 }
 
-function toggleFeature(key){
-  cfg[key]=!cfg[key];
-  render();
-}
-
-function updateCfg(key,val){
-  cfg[key]=val;
-  render();
-}
-
+function toggleFeature(key){cfg[key]=!cfg[key];render()}
+function updateCfg(key,val){cfg[key]=val;render()}
 function setTab(t){currentTab=t;renderContent()}
+
+function toggleBonusMonth(m){
+  const idx=cfg.bonusPaidMonths.indexOf(m);
+  if(idx>=0)cfg.bonusPaidMonths.splice(idx,1);
+  else cfg.bonusPaidMonths.push(m);
+  cfg.bonusPaidMonths.sort((a,b)=>a-b);
+  if(cfg.bonusPaidMonths.length===0)cfg.bonusPaidMonths.push(12);
+  render();
+}
 
 function render(){
   runProjection();
-  // Update toggles
-  ['enableIInvest','enableExtra','enableSalaryIncrement','lastYearDividend'].forEach(k=>{
-    const map={enableIInvest:'iinvest',enableExtra:'extra',enableSalaryIncrement:'salary',lastYearDividend:'dividend'};
-    const id=map[k];
-    const btn=document.getElementById('tog_'+id);
-    const lbl=document.getElementById('lbl_'+id);
-    btn.className='toggle-btn '+(cfg[k]?'on':'off');
-    lbl.className='toggle-label '+(cfg[k]?'on':'off');
-  });
 
-  // Disabled fields
+  document.getElementById('toggleGroup').innerHTML=FEATURES.map(f=>{
+    const on=cfg[f.key];
+    return `<div class="toggle-row">
+      <button class="toggle-btn ${on?'on':'off'}" onclick="toggleFeature('${f.key}')"><div class="toggle-dot"></div></button>
+      <div><div class="toggle-label ${on?'on':'off'}">${f.label}</div><div class="toggle-desc">${f.desc}</div></div>
+    </div>`;
+  }).join('');
+
   document.getElementById('field_iinvest').className='field'+(cfg.enableIInvest?'':' disabled');
   document.getElementById('field_extra').className='field'+(cfg.enableExtra?'':' disabled');
   document.getElementById('field_investReturn').className='field'+(cfg.enableIInvest?'':' disabled');
   document.getElementById('field_salaryInc').className='field'+(cfg.enableSalaryIncrement?'':' disabled');
   document.getElementById('field_freq').className='field'+(cfg.enableIInvest?'':' disabled');
 
-  // Dividend box
   document.getElementById('dividendBox').style.display=cfg.lastYearDividend?'none':'block';
   const eA1=cfg.lastYearDividend?cfg.akaun1:cfg.akaun1+dividendApplied.a1;
   const eA2=cfg.lastYearDividend?cfg.akaun2:cfg.akaun2+dividendApplied.a2;
@@ -271,11 +315,18 @@ function render(){
   document.getElementById('hint_a2').textContent=cfg.lastYearDividend?'':`After dividend: ${fmt(eA2)}`;
   document.getElementById('hint_a3').textContent=cfg.lastYearDividend?'':`After dividend: ${fmt(eA3)}`;
 
-  // Header sub
-  const rem=12-(cfg.startMonth-1);
-  document.getElementById('headerSub').textContent=`EPF + i-Invest • Starting ${MONTHS[cfg.startMonth-1]} 2026 • ${rem} months remaining this year`;
+  document.getElementById('bonusBox').style.display=cfg.enableBonus?'block':'none';
+  const annualBonusEPF=Math.round(cfg.monthlyContrib*cfg.bonusMonths);
+  document.getElementById('bonusHint').textContent=`Bonus EPF contribution: ${fmt(annualBonusEPF)}/year`;
+  document.getElementById('bonusMonthGrid').innerHTML=MONTHS.map((m,i)=>{
+    const mon=i+1;
+    const active=cfg.bonusPaidMonths.includes(mon);
+    return `<button class="bonus-month-btn${active?' active':''}" onclick="toggleBonusMonth(${mon})">${m}</button>`;
+  }).join('');
 
-  // Stats
+  const rem=12-(cfg.startMonth-1);
+  document.getElementById('headerSub').textContent=`EPF${cfg.enableIInvest?' + i-Invest':''} • Starting ${MONTHS[cfg.startMonth-1]} 2026 • ${rem} months remaining this year`;
+
   const startTotal=eA1+eA2+eA3+(cfg.enableIInvest?cfg.iInvest:0);
   const yrs=reachedAge?reachedAge-cfg.startAge:null;
   const rYear=reachedAge?2026+yrs:null;
@@ -283,7 +334,7 @@ function render(){
   const targetLabel=cfg.target===390000?'Basic Savings':cfg.target===650000?'Adequate Savings':cfg.target===1300000?'Enhanced Savings':'Custom';
 
   let statsHTML=`
-    <div class="stat cyan"><div class="stat-label">Starting Total</div><div class="stat-value">${fmt(startTotal)}</div><div class="stat-sub">From ${MONTHS[cfg.startMonth-1]} 2026${!cfg.lastYearDividend?' (incl. est. dividend)':''}</div></div>
+    <div class="stat cyan"><div class="stat-label">Starting Total</div><div class="stat-value">${fmt(startTotal)}</div><div class="stat-sub">From ${MONTHS[cfg.startMonth-1]} 2026${!cfg.lastYearDividend?' (incl. dividend)':''}</div></div>
     <div class="stat purple"><div class="stat-label">Target</div><div class="stat-value">${fmt(cfg.target)}</div><div class="stat-sub">${targetLabel}</div></div>
     <div class="stat ${reachedAge?'green':'red'}"><div class="stat-label">${reachedAge?'Reached At':'Status'}</div><div class="stat-value">${reachedAge?'Age '+reachedAge:'Not reached'}</div><div class="stat-sub">${reachedAge?`Year ${rYear} • ${yrs} yrs from now`:'Try higher contributions'}</div></div>`;
   if(finalRow){
@@ -292,17 +343,14 @@ function render(){
   }
   document.getElementById('statsRow').innerHTML=statsHTML;
 
-  // Pills
-  const pills=[{key:'enableIInvest',label:'i-Invest',icon:'📈'},{key:'enableExtra',label:'Extra Top-Up',icon:'💰'},{key:'enableSalaryIncrement',label:'Salary Increment',icon:'📊'},{key:'lastYearDividend',label:'Dividend Credited',icon:'🏦'}];
-  document.getElementById('pillsRow').innerHTML=pills.map(p=>`<span class="pill ${cfg[p.key]?'on':''}" onclick="toggleFeature('${p.key}')">${p.icon} ${p.label} ${cfg[p.key]?'ON':'OFF'}</span>`).join('');
+  const pills=FEATURES.map(f=>`<span class="pill ${cfg[f.key]?'on':''}" onclick="toggleFeature('${f.key}')">${f.icon} ${f.label} ${cfg[f.key]?'ON':'OFF'}</span>`);
+  document.getElementById('pillsRow').innerHTML=pills.join('');
 
-  // Tabs
   document.getElementById('tabsRow').innerHTML=['chart','table','savings'].map(t=>{
     const labels={chart:'📈 Chart',table:'📋 Table',savings:'🏦 Simpanan Asas'};
     return `<button class="tab ${currentTab===t?'active':''}" onclick="setTab('${t}')">${labels[t]}</button>`;
   }).join('');
 
-  // Quick targets
   const targets=[{label:'Basic (390K)',val:390000,cls:'green'},{label:'Adequate (650K)',val:650000,cls:'orange'},{label:'Enhanced (1.3M)',val:1300000,cls:'red'}];
   document.getElementById('quickTargets').innerHTML=targets.map(t=>`<button class="quick-btn ${cfg.target===t.val?'active-'+t.cls:''}" onclick="updateCfg('target',${t.val})">${t.label}</button>`).join('');
 
@@ -314,7 +362,6 @@ function renderContent(){
   if(currentTab==='chart')renderChart(el);
   else if(currentTab==='table')renderTable(el);
   else renderSavings(el);
-  // Re-highlight active tab
   document.querySelectorAll('.tab').forEach(t=>{
     const key=t.textContent.includes('Chart')?'chart':t.textContent.includes('Table')?'table':'savings';
     t.className='tab'+(currentTab===key?' active':'');
@@ -323,78 +370,40 @@ function renderContent(){
 
 function renderChart(el){
   el.innerHTML='<div class="chart-wrap"><canvas id="myChart" height="400"></canvas></div>';
-  const canvas=document.getElementById('myChart');
-  const ctx=canvas.getContext('2d');
+  const ctx=document.getElementById('myChart').getContext('2d');
   if(chart)chart.destroy();
-
   const labels=results.map(r=>r.age);
   const datasets=[
-    {label:'Akaun 1',data:results.map(r=>r.akaun1),backgroundColor:'rgba(100,181,246,0.15)',borderColor:'#64b5f6',borderWidth:1.5,fill:true,tension:0.3},
-    {label:'Akaun 2',data:results.map(r=>r.akaun2),backgroundColor:'rgba(129,199,132,0.1)',borderColor:'#81c784',borderWidth:1.5,fill:true,tension:0.3},
-    {label:'Akaun 3',data:results.map(r=>r.akaun3),backgroundColor:'rgba(255,183,77,0.1)',borderColor:'#ffb74d',borderWidth:1.5,fill:true,tension:0.3},
+    {label:'Akaun 1',data:results.map(r=>r.akaun1),backgroundColor:'rgba(100,181,246,0.15)',borderColor:'#64b5f6',borderWidth:1.5,fill:true,tension:.3},
+    {label:'Akaun 2',data:results.map(r=>r.akaun2),backgroundColor:'rgba(129,199,132,0.1)',borderColor:'#81c784',borderWidth:1.5,fill:true,tension:.3},
+    {label:'Akaun 3',data:results.map(r=>r.akaun3),backgroundColor:'rgba(255,183,77,0.1)',borderColor:'#ffb74d',borderWidth:1.5,fill:true,tension:.3},
   ];
-  if(cfg.enableIInvest){
-    datasets.push({label:'i-Invest',data:results.map(r=>r.iInvest),backgroundColor:'rgba(206,147,216,0.2)',borderColor:'#ce93d8',borderWidth:2,fill:true,tension:0.3});
-  }
-  datasets.push({label:'Total',data:results.map(r=>r.total),backgroundColor:'transparent',borderColor:'#4fc3f7',borderWidth:2.5,borderDash:[],fill:false,tension:0.3,pointRadius:results.map(r=>r.age===reachedAge?6:2),pointBackgroundColor:results.map(r=>r.age===reachedAge?'#66bb6a':'#4fc3f7')});
-
+  if(cfg.enableIInvest)datasets.push({label:'i-Invest',data:results.map(r=>r.iInvest),backgroundColor:'rgba(206,147,216,0.2)',borderColor:'#ce93d8',borderWidth:2,fill:true,tension:.3});
+  datasets.push({label:'Total',data:results.map(r=>r.total),backgroundColor:'transparent',borderColor:'#4fc3f7',borderWidth:2.5,fill:false,tension:.3,pointRadius:results.map(r=>r.age===reachedAge?6:2),pointBackgroundColor:results.map(r=>r.age===reachedAge?'#66bb6a':'#4fc3f7')});
   chart=new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets},
+    type:'line',data:{labels,datasets},
     options:{
       responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{labels:{color:'#8a919e',font:{size:11}}},
-        tooltip:{
-          backgroundColor:'#1a1f2e',borderColor:'#2a3548',borderWidth:1,titleColor:'#e8ecf1',bodyColor:'#ccc',
-          callbacks:{label:ctx=>`${ctx.dataset.label}: RM ${ctx.parsed.y.toLocaleString()}`}
-        },
-        annotation:undefined
-      },
-      scales:{
-        x:{ticks:{color:'#5b6b82',font:{size:11}},grid:{color:'#1e2738'},title:{display:true,text:'Age',color:'#5b6b82'}},
-        y:{ticks:{color:'#5b6b82',font:{size:11},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},grid:{color:'#1e2738'}}
-      }
+      plugins:{legend:{labels:{color:'#8a919e',font:{size:11}}},tooltip:{backgroundColor:'#1a1f2e',borderColor:'#2a3548',borderWidth:1,titleColor:'#e8ecf1',bodyColor:'#ccc',callbacks:{label:c=>`${c.dataset.label}: RM ${c.parsed.y.toLocaleString()}`}}},
+      scales:{x:{ticks:{color:'#5b6b82',font:{size:11}},grid:{color:'#1e2738'},title:{display:true,text:'Age',color:'#5b6b82'}},y:{ticks:{color:'#5b6b82',font:{size:11},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},grid:{color:'#1e2738'}}}
     },
-    plugins:[{
-      id:'targetLine',
-      afterDraw(chart){
-        const yScale=chart.scales.y;
-        const xScale=chart.scales.x;
-        const ctx=chart.ctx;
-        // Target line
-        const yPx=yScale.getPixelForValue(cfg.target);
-        if(yPx>=yScale.top&&yPx<=yScale.bottom){
-          ctx.save();ctx.setLineDash([8,4]);ctx.strokeStyle='#ef535088';ctx.lineWidth=1.5;
-          ctx.beginPath();ctx.moveTo(xScale.left,yPx);ctx.lineTo(xScale.right,yPx);ctx.stroke();
-          ctx.fillStyle='#ef5350';ctx.font='bold 11px Inter';ctx.textAlign='right';
-          ctx.fillText(`Target ${fmt(cfg.target)}`,xScale.right-4,yPx-6);ctx.restore();
-        }
-        // Reached line
-        if(reachedAge){
-          const idx=results.findIndex(r=>r.age===reachedAge);
-          if(idx>=0){
-            const xPx=xScale.getPixelForValue(idx);
-            ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#66bb6a88';ctx.lineWidth=1.5;
-            ctx.beginPath();ctx.moveTo(xPx,yScale.top);ctx.lineTo(xPx,yScale.bottom);ctx.stroke();
-            ctx.fillStyle='#66bb6a';ctx.font='bold 11px Inter';ctx.textAlign='center';
-            ctx.fillText(`Age ${reachedAge}`,xPx,yScale.top-6);ctx.restore();
-          }
-        }
-      }
-    }]
+    plugins:[{id:'lines',afterDraw(ch){
+      const yS=ch.scales.y,xS=ch.scales.x,ctx=ch.ctx;
+      const yPx=yS.getPixelForValue(cfg.target);
+      if(yPx>=yS.top&&yPx<=yS.bottom){ctx.save();ctx.setLineDash([8,4]);ctx.strokeStyle='#ef535088';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xS.left,yPx);ctx.lineTo(xS.right,yPx);ctx.stroke();ctx.fillStyle='#ef5350';ctx.font='bold 11px Inter';ctx.textAlign='right';ctx.fillText(`Target ${fmt(cfg.target)}`,xS.right-4,yPx-6);ctx.restore()}
+      if(reachedAge){const idx=results.findIndex(r=>r.age===reachedAge);if(idx>=0){const xPx=xS.getPixelForValue(idx);ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#66bb6a88';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xPx,yS.top);ctx.lineTo(xPx,yS.bottom);ctx.stroke();ctx.fillStyle='#66bb6a';ctx.font='bold 11px Inter';ctx.textAlign='center';ctx.fillText(`Age ${reachedAge}`,xPx,yS.top-6);ctx.restore()}}
+    }}]
   });
 }
 
 function renderTable(el){
-  const iInv=cfg.enableIInvest;
+  const iInv=cfg.enableIInvest;const bon=cfg.enableBonus;
   let html='<div class="table-wrap"><table><thead><tr>';
-  ['Year','From','Age','Akaun 1','Akaun 2','Akaun 3',...(iInv?['i-Invest']:[]),'Total','Monthly'].forEach(h=>html+=`<th>${h}</th>`);
+  ['Year','From','Age','Akaun 1','Akaun 2','Akaun 3',...(iInv?['i-Invest']:[]),'Total','Monthly',...(bon?['Bonus/Yr']:[])].forEach(h=>html+=`<th>${h}</th>`);
   html+='</tr></thead><tbody>';
   results.forEach((r,i)=>{
-    const isT=r.age===reachedAge;
-    const cls=isT?'target-row':i%2?'alt':'';
+    const isT=r.age===reachedAge;const cls=isT?'target-row':i%2?'alt':'';
     html+=`<tr class="${cls}">`;
     html+=`<td style="color:var(--text2)">${r.year}</td>`;
     html+=`<td style="color:var(--text3);font-size:11px">${r.monthLabel}</td>`;
@@ -405,6 +414,7 @@ function renderTable(el){
     if(iInv)html+=`<td style="color:var(--purple)">${r.iInvest.toLocaleString()}</td>`;
     html+=`<td style="color:${isT?'var(--green)':'var(--text)'};font-weight:700">${r.total.toLocaleString()}${isT?' ✅':''}</td>`;
     html+=`<td style="color:var(--text3)">${r.monthlyContrib.toLocaleString()}</td>`;
+    if(bon)html+=`<td style="color:var(--teal)">${r.bonusContrib.toLocaleString()}</td>`;
     html+='</tr>';
   });
   html+='</tbody></table></div>';
@@ -421,13 +431,8 @@ function renderSavings(el){
   el.innerHTML=html;
 }
 
-// Init month select
 const monthSelect=document.getElementById('in_month');
-MONTHS.forEach((m,i)=>{
-  const opt=document.createElement('option');
-  opt.value=i+1;opt.textContent=`${m} (${12-i} months left)`;
-  monthSelect.appendChild(opt);
-});
+MONTHS.forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=`${m} (${12-i} months left)`;monthSelect.appendChild(o)});
 monthSelect.value=cfg.startMonth;
 
 render();
