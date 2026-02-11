@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n8n + Odoo + PostgreSQL Setup Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #2980b9;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #3498db;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .credentials-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .code-block-wrapper {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            padding-top: 45px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .copy-button:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        .copy-button:active {
+            transform: scale(0.95);
+        }
+        
+        .copy-button.copied {
+            background: #28a745;
+        }
+        
+        .inline-code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-size: 0.9em;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        
+        th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .section-number {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 30px 0;
+        }
+        
+        .toc h2 {
+            margin-top: 0;
+            border: none;
+            padding: 0;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .copy-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Complete Setup Guide: n8n + Odoo + PostgreSQL with SSL</h1>
+        
+        <div class="credentials-box">
+            <h3>📋 System Information</h3>
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td><strong>Cloud Provider</strong></td>
+                    <td>AWS Lightsail</td>
+                </tr>
+                <tr>
+                    <td><strong>Operating System</strong></td>
+                    <td>Amazon Linux 2</td>
+                </tr>
+                <tr>
+                    <td><strong>Public IP Address</strong></td>
+                    <td><span class="highlight">47.130.204.245</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Domain</strong></td>
+                    <td>phytolink-venture.com (Namecheap)</td>
+                </tr>
+                <tr>
+                    <td><strong>n8n URL</strong></td>
+                    <td><a href="https://n8n.phytolink-venture.com">https://n8n.phytolink-venture.com</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Odoo URL</strong></td>
+                    <td><a href="https://odoo.phytolink-venture.com">https://odoo.phytolink-venture.com</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Email</strong></td>
+                    <td>liewxen@gmail.com</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="credentials-box">
+            <h3>🔑 Access Credentials</h3>
+            <table>
+                <tr>
+                    <th>Service</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td><strong>n8n</strong></td>
+                    <td>admin</td>
+                    <td>admin123</td>
+                    <td>Basic Auth login</td>
+                </tr>
+                <tr>
+                    <td><strong>PostgreSQL (superuser)</strong></td>
+                    <td>postgres</td>
+                    <td>your_strong_password_here</td>
+                    <td>Database admin</td>
+                </tr>
+                <tr>
+                    <td><strong>PostgreSQL (odoo user)</strong></td>
+                    <td>odoo</td>
+                    <td>odoo_password123</td>
+                    <td>Odoo database user</td>
+                </tr>
+                <tr>
+                    <td><strong>Odoo (first setup)</strong></td>
+                    <td>Set during setup</td>
+                    <td>Set during setup</td>
+                    <td>Create during initial access</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Security Warning:</strong> Change all default passwords before using in production! The passwords shown here are examples used during setup.
+        </div>
+
+        <div class="toc">
+            <h2>📑 Table of Contents</h2>
+            <ul>
+                <li><a href="#step1">1. Install Docker</a></li>
+                <li><a href="#step2">2. Install Docker Compose</a></li>
+                <li><a href="#step3">3. Create Project Structure</a></li>
+                <li><a href="#step4">4. Configure Docker Compose</a></li>
+                <li><a href="#step5">5. Initialize Databases</a></li>
+                <li><a href="#step6">6. Configure Nginx</a></li>
+                <li><a href="#step7">7. Setup DNS Records</a></li>
+                <li><a href="#step8">8. Configure Lightsail Firewall</a></li>
+                <li><a href="#step9">9. Obtain SSL Certificates</a></li>
+                <li><a href="#step10">10. Configure SSL in Nginx</a></li>
+                <li><a href="#step11">11. Access Applications</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#maintenance">Maintenance Commands</a></li>
+            </ul>
+        </div>
+
+        <h2 id="step1"><span class="section-number">1</span>Install Docker</h2>
+        <p>First, install Docker on your Amazon Linux 2 instance:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Update system packages
+sudo yum update -y
+
+# Install Docker
+sudo yum install docker -y
+
+# Start Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add user to docker group (no sudo needed)
+sudo usermod -a -G docker $USER
+newgrp docker
+
+# Verify installation
+docker --version</pre>
+        </div>
+
+        <h2 id="step2"><span class="section-number">2</span>Install Docker Compose</h2>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Download Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+# Make it executable
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Verify installation
+docker-compose --version</pre>
+        </div>
+
+        <h2 id="step3"><span class="section-number">3</span>Create Project Structure</h2>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Create main directory
+mkdir ~/n8n-odoo-setup
+cd ~/n8n-odoo-setup
+
+# Create nginx directories
+mkdir -p nginx/conf.d
+mkdir -p nginx/ssl</pre>
+        </div>
+
+        <h2 id="step4"><span class="section-number">4</span>Configure Docker Compose</h2>
+        <p>Create the main <span class="inline-code">docker-compose.yml</span> file:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">nano ~/n8n-odoo-setup/docker-compose.yml</pre>
+        </div>
+        
+        <p>Paste this configuration:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password123
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=postgres_password123
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - WEBHOOK_URL=https://n8n.phytolink-venture.com/
+      - N8N_HOST=n8n.phytolink-venture.com
+      - N8N_PROTOCOL=https
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - app-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  odoo:
+    image: odoo:latest
+    container_name: odoo
+    restart: unless-stopped
+    environment:
+      - HOST=postgres
+      - USER=odoo
+      - PASSWORD=odoo_password123
+      - DB_PORT=5432
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_addons:/mnt/extra-addons
+    networks:
+      - app-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    networks:
+      - app-network
+    depends_on:
+      - n8n
+      - odoo
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  postgres_data:
+  n8n_data:
+  odoo_data:
+  odoo_addons:
+  certbot_www:
+  certbot_conf:
+
+networks:
+  app-network:
+    driver: bridge</pre>
+        </div>
+        
+        <p>Save the file: <span class="inline-code">Ctrl+X</span>, then <span class="inline-code">Y</span>, then <span class="inline-code">Enter</span></p>
+
+        <h2 id="step5"><span class="section-number">5</span>Initialize Databases</h2>
+        <p>Start PostgreSQL and create the required database and user (Odoo will create its own database via the web UI):</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Start PostgreSQL first
+docker-compose up -d postgres
+
+# Wait for PostgreSQL to be ready (10 seconds)
+sleep 10
+
+# Create n8n database
+docker exec -it postgres psql -U postgres -c "CREATE DATABASE n8n;"
+
+# Create odoo user with password and allow database creation
+docker exec -it postgres psql -U postgres -c "CREATE USER odoo WITH PASSWORD 'odoo_password123';"
+docker exec -it postgres psql -U postgres -c "ALTER USER odoo CREATEDB;"</pre>
+        </div>
+
+        <div class="success-box">
+            <strong>✅ Database Structure:</strong>
+            <ul>
+                <li><strong>n8n</strong> database → Used by n8n (owned by postgres user)</li>
+                <li><strong>Odoo database</strong> → Will be created from the Odoo web UI (owned by odoo user)</li>
+                <li><strong>postgres</strong> database → Default PostgreSQL database</li>
+            </ul>
+        </div>
+
+        <h2 id="step6"><span class="section-number">6</span>Configure Initial Nginx (HTTP Only)</h2>
+        <p>Create the initial nginx configuration for obtaining SSL certificates:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">nano ~/n8n-odoo-setup/nginx/conf.d/default.conf</pre>
+        </div>
+        
+        <p>Paste this configuration:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">server {
+    listen 80;
+    server_name n8n.phytolink-venture.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        proxy_pass http://n8n:5678;
+        proxy_set_header Host $host;
+    }
+}
+
+server {
+    listen 80;
+    server_name odoo.phytolink-venture.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        proxy_pass http://odoo:8069;
+        proxy_set_header Host $host;
+    }
+}</pre>
+        </div>
+
+        <h3>Start All Services</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">cd ~/n8n-odoo-setup
+docker-compose up -d
+docker-compose ps</pre>
+        </div>
+        
+        <p>All containers should show "Up" status.</p>
+
+        <h2 id="step7"><span class="section-number">7</span>Setup DNS Records at Namecheap</h2>
+        <ol>
+            <li>Login to <a href="https://www.namecheap.com">Namecheap</a></li>
+            <li>Go to <strong>Domain List</strong> → Click <strong>Manage</strong> next to phytolink-venture.com</li>
+            <li>Click on <strong>Advanced DNS</strong> tab</li>
+            <li>Under <strong>Host Records</strong>, click <strong>Add New Record</strong></li>
+            <li>Add these two A Records:</li>
+        </ol>
+
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Host</th>
+                <th>Value</th>
+                <th>TTL</th>
+            </tr>
+            <tr>
+                <td>A Record</td>
+                <td>n8n</td>
+                <td>47.130.204.245</td>
+                <td>Automatic</td>
+            </tr>
+            <tr>
+                <td>A Record</td>
+                <td>odoo</td>
+                <td>47.130.204.245</td>
+                <td>Automatic</td>
+            </tr>
+        </table>
+
+        <p>Click <strong>Save All Changes</strong> and wait 5-15 minutes for DNS propagation.</p>
+
+        <h3>Verify DNS Propagation</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># From your server
+nslookup n8n.phytolink-venture.com
+nslookup odoo.phytolink-venture.com
+
+# Both should return: 47.130.204.245</pre>
+        </div>
+
+        <h2 id="step8"><span class="section-number">8</span>Configure Lightsail Firewall</h2>
+        <ol>
+            <li>Go to <a href="https://lightsail.aws.amazon.com/">AWS Lightsail Console</a></li>
+            <li>Click on your instance</li>
+            <li>Go to <strong>Networking</strong> tab</li>
+            <li>Scroll down to <strong>IPv4 Firewall</strong></li>
+            <li>Ensure you have these rules (click <strong>+ Add rule</strong> if missing):</li>
+        </ol>
+
+        <table>
+            <tr>
+                <th>Application</th>
+                <th>Protocol</th>
+                <th>Port</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>SSH</td>
+                <td>TCP</td>
+                <td>22</td>
+                <td>Server access</td>
+            </tr>
+            <tr>
+                <td>HTTP</td>
+                <td>TCP</td>
+                <td>80</td>
+                <td>SSL certificate verification</td>
+            </tr>
+            <tr>
+                <td>HTTPS</td>
+                <td>TCP</td>
+                <td>443</td>
+                <td>Secure web access</td>
+            </tr>
+            <tr>
+                <td>PostgreSQL (Optional)</td>
+                <td>TCP</td>
+                <td>5432</td>
+                <td>Database access (if using pgAdmin)</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <strong>🔒 Security Note:</strong> Only open port 5432 if you need external database access. For better security, use SSH tunneling instead of exposing PostgreSQL directly.
+        </div>
+
+        <h2 id="step9"><span class="section-number">9</span>Obtain SSL Certificates</h2>
+        <p>Get free SSL certificates from Let's Encrypt using standalone mode:</p>
+
+        <h3>Step 1: Stop Nginx temporarily</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">docker-compose stop nginx</pre>
+        </div>
+
+        <h3>Step 2: Get certificate for n8n</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">docker run --rm -it \
+  -v n8n-odoo-setup_certbot_conf:/etc/letsencrypt \
+  -v n8n-odoo-setup_certbot_www:/var/www/certbot \
+  -p 80:80 \
+  certbot/certbot certonly --standalone \
+  --email liewxen@gmail.com \
+  --agree-tos \
+  --no-eff-email \
+  -d n8n.phytolink-venture.com</pre>
+        </div>
+
+        <h3>Step 3: Get certificate for Odoo</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">docker run --rm -it \
+  -v n8n-odoo-setup_certbot_conf:/etc/letsencrypt \
+  -v n8n-odoo-setup_certbot_www:/var/www/certbot \
+  -p 80:80 \
+  certbot/certbot certonly --standalone \
+  --email liewxen@gmail.com \
+  --agree-tos \
+  --no-eff-email \
+  -d odoo.phytolink-venture.com</pre>
+        </div>
+
+        <p>You should see: <span class="highlight">"Successfully received certificate"</span> for both domains.</p>
+
+        <h3>Step 4: Verify certificates</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">docker run --rm \
+  -v n8n-odoo-setup_certbot_conf:/etc/letsencrypt \
+  certbot/certbot certificates</pre>
+        </div>
+
+        <h2 id="step10"><span class="section-number">10</span>Configure SSL in Nginx</h2>
+        <p>Update nginx configuration to use SSL certificates:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">nano ~/n8n-odoo-setup/nginx/conf.d/default.conf</pre>
+        </div>
+
+        <p>Replace entire content with this complete SSL configuration:</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># n8n - HTTP to HTTPS redirect
+server {
+    listen 80;
+    server_name n8n.phytolink-venture.com;
+    
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# n8n - HTTPS
+server {
+    listen 443 ssl http2;
+    server_name n8n.phytolink-venture.com;
+
+    ssl_certificate /etc/letsencrypt/live/n8n.phytolink-venture.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/n8n.phytolink-venture.com/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://n8n:5678;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebSocket support for n8n
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Odoo - HTTP to HTTPS redirect
+server {
+    listen 80;
+    server_name odoo.phytolink-venture.com;
+    
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# Odoo - HTTPS
+server {
+    listen 443 ssl http2;
+    server_name odoo.phytolink-venture.com;
+
+    ssl_certificate /etc/letsencrypt/live/odoo.phytolink-venture.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/odoo.phytolink-venture.com/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://odoo:8069;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+
+    # Odoo longpolling for live updates
+    location /longpolling {
+        proxy_pass http://odoo:8072;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}</pre>
+        </div>
+
+        <p>Save the file: <span class="inline-code">Ctrl+X</span>, <span class="inline-code">Y</span>, <span class="inline-code">Enter</span></p>
+
+        <h3>Restart Nginx and verify</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Start nginx
+docker-compose start nginx
+
+# Test configuration
+docker exec nginx nginx -t
+
+# Check logs
+docker logs nginx --tail 20
+
+# Verify all containers are running
+docker-compose ps</pre>
+        </div>
+
+        <h2 id="step11"><span class="section-number">11</span>Access Your Applications</h2>
+        
+        <div class="success-box">
+            <h3>🎉 Setup Complete! Your applications are now live:</h3>
+            <table>
+                <tr>
+                    <th>Application</th>
+                    <th>URL</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                </tr>
+                <tr>
+                    <td><strong>n8n</strong></td>
+                    <td><a href="https://n8n.phytolink-venture.com">https://n8n.phytolink-venture.com</a></td>
+                    <td>admin</td>
+                    <td>admin123</td>
+                </tr>
+                <tr>
+                    <td><strong>Odoo</strong></td>
+                    <td><a href="https://odoo.phytolink-venture.com">https://odoo.phytolink-venture.com</a></td>
+                    <td colspan="2">Create during first access</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>First Time Odoo Setup</h3>
+        <ol>
+            <li>Visit: <a href="https://odoo.phytolink-venture.com">https://odoo.phytolink-venture.com</a></li>
+            <li>Fill in the database creation form:
+                <ul>
+                    <li><strong>Master Password:</strong> Create a strong master password</li>
+                    <li><strong>Database Name:</strong> Choose a name (e.g., "production")</li>
+                    <li><strong>Email:</strong> Your email address</li>
+                    <li><strong>Password:</strong> Your Odoo admin password</li>
+                    <li><strong>Phone:</strong> Optional</li>
+                    <li><strong>Language:</strong> Select your language</li>
+                    <li><strong>Country:</strong> Select your country</li>
+                    <li><strong>Demo Data:</strong> Uncheck (unless you want sample data)</li>
+                </ul>
+            </li>
+            <li>Click <strong>Create database</strong></li>
+            <li>Wait for Odoo to initialize (1-2 minutes)</li>
+            <li>You'll be logged in automatically</li>
+        </ol>
+
+        <h2><span class="section-number">12</span>Install OCA Contract Addons (optional)</h2>
+        <p>To add the <a href="https://github.com/OCA/contract">OCA Contract</a> addons to Odoo, clone them into the <span class="inline-code">/mnt/extra-addons</span> volume, then update the Apps list and install from Odoo.</p>
+
+        <h3>Create the extra-addons directory</h3>
+        <p>This creates the directory inside the named Docker volume that Odoo mounts at <span class="inline-code">/mnt/extra-addons</span>.</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Create directory inside the named volume (project: n8n-odoo-setup)
+docker run --rm \
+  -v n8n-odoo-setup_odoo_addons:/mnt/extra-addons \
+  alpine sh -c "mkdir -p /mnt/extra-addons && ls -la /mnt/extra-addons"</pre>
+        </div>
+
+        <h3>Clone addons into the extra-addons volume</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Choose the branch matching your Odoo major version (e.g., 19.0)
+BRANCH=19.0
+
+# Clone OCA/contract into the named volume that is mounted at /mnt/extra-addons
+docker run --rm \
+  -v n8n-odoo-setup_odoo_addons:/mnt/extra-addons \
+  alpine/git clone --depth=1 -b "$BRANCH" https://github.com/OCA/contract.git /mnt/extra-addons/oca-contract
+
+# (Re)start Odoo to pick up new addons
+docker-compose restart odoo
+
+# Verify Odoo sees /mnt/extra-addons now
+docker-compose logs --tail=200 odoo</pre>
+        </div>
+
+        <div class="warning-box">
+            <strong>Note:</strong> Use a branch that matches your Odoo version. For example, set <span class="inline-code">BRANCH=19.0</span> for Odoo 19. If a matching branch is not yet available, the addons may be incompatible.
+        </div>
+
+        <h3>Install from the Odoo UI</h3>
+        <ol>
+            <li>Open Odoo → Apps.</li>
+            <li>Enable <strong>Developer Mode</strong> (Settings → Activate Developer Mode).</li>
+            <li>Click <strong>Update Apps List</strong> and then <strong>Update</strong>.</li>
+            <li>Search for <strong>Contract</strong> (publisher: OCA) and install desired modules (e.g., <span class="inline-code">contract</span>, <span class="inline-code">product_contract</span>).</li>
+        </ol>
+
+        <h2 id="troubleshooting">🔧 Troubleshooting</h2>
+
+        <h3>Issue: "Site can't be reached" or ERR_QUIC_PROTOCOL_ERROR</h3>
+        <p><strong>Solution 1:</strong> Disable QUIC in Chrome</p>
+        <ol>
+            <li>Go to <span class="inline-code">chrome://flags</span></li>
+            <li>Search for "QUIC"</li>
+            <li>Set to "Disabled"</li>
+            <li>Restart Chrome</li>
+        </ol>
+        
+        <p><strong>Solution 2:</strong> Try a different browser (Firefox, Edge, Safari)</p>
+
+        <h3>Issue: PostgreSQL connection failed in pgAdmin</h3>
+        <p><strong>Solution:</strong> Use SSH tunnel instead of exposing port 5432</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># On Windows PowerShell
+ssh -i "path\to\your-key.pem" -L 5432:localhost:5432 ec2-user@47.130.204.245 -N
+
+# Then connect pgAdmin to localhost:5432</pre>
+        </div>
+
+        <h3>Issue: Odoo shows "Access Denied" during database creation</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Grant CREATEDB permission
+docker exec -it postgres psql -U postgres -c "ALTER USER odoo CREATEDB;"
+docker-compose restart odoo</pre>
+        </div>
+
+        <h3>Issue: SSL certificate errors</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Verify certificates exist
+docker exec nginx ls -la /etc/letsencrypt/live/n8n.phytolink-venture.com/
+docker exec nginx ls -la /etc/letsencrypt/live/odoo.phytolink-venture.com/
+
+# Check nginx config
+docker exec nginx nginx -t
+
+# Restart nginx
+docker-compose restart nginx</pre>
+        </div>
+
+        <h3>Issue: Container keeps restarting</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Check logs for the problematic container
+docker logs n8n
+docker logs odoo
+docker logs postgres
+docker logs nginx
+
+# Check all container status
+docker-compose ps</pre>
+        </div>
+
+        <h2 id="maintenance">🛠️ Maintenance Commands</h2>
+
+        <h3>View Container Status</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">cd ~/n8n-odoo-setup
+docker-compose ps</pre>
+        </div>
+
+        <h3>View Logs</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># All services
+docker-compose logs -f
+
+# Specific service
+docker logs n8n
+docker logs odoo
+docker logs nginx
+docker logs postgres
+
+# Last 50 lines
+docker logs nginx --tail 50</pre>
+        </div>
+
+        <h3>Restart Services</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Restart all services
+docker-compose restart
+
+# Restart specific service
+docker-compose restart nginx
+docker-compose restart n8n
+docker-compose restart odoo</pre>
+        </div>
+
+        <h3>Stop and Start Services</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Stop all services
+docker-compose down
+
+# Start all services
+docker-compose up -d
+
+# Stop specific service
+docker-compose stop odoo
+
+# Start specific service
+docker-compose start odoo</pre>
+        </div>
+
+        <h3>Access PostgreSQL Database</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Access PostgreSQL CLI
+docker exec -it postgres psql -U postgres
+
+# List databases
+docker exec -it postgres psql -U postgres -c "\l"
+
+# Connect to specific database
+docker exec -it postgres psql -U postgres -d n8n
+
+# Exit PostgreSQL CLI
+\q</pre>
+        </div>
+
+        <h3>Backup Databases</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Backup n8n database
+docker exec postgres pg_dump -U postgres n8n > n8n_backup.sql
+
+# Backup odoo database
+docker exec postgres pg_dump -U odoo odoo > odoo_backup.sql
+
+# Backup all databases
+docker exec postgres pg_dumpall -U postgres > all_databases_backup.sql</pre>
+        </div>
+
+        <h3>Restore Databases</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Restore n8n database
+cat n8n_backup.sql | docker exec -i postgres psql -U postgres n8n
+
+# Restore odoo database
+cat odoo_backup.sql | docker exec -i postgres psql -U odoo odoo</pre>
+        </div>
+
+        <h3>Update Docker Images</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Pull latest images
+docker-compose pull
+
+# Restart with new images
+docker-compose up -d</pre>
+        </div>
+
+        <h3>Check SSL Certificate Expiration</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># View certificate details
+docker exec certbot certbot certificates
+
+# Manually renew certificates (usually automatic)
+docker-compose run --rm certbot renew</pre>
+        </div>
+
+        <h3>View Disk Usage</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Check Docker disk usage
+docker system df
+
+# Check volume sizes
+docker volume ls
+docker system df -v</pre>
+        </div>
+
+        <h3>Clean Up Docker System</h3>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block"># Remove unused images, containers, networks
+docker system prune
+
+# Remove unused volumes (WARNING: This deletes data!)
+docker system prune --volumes
+
+# Remove specific volume
+docker volume rm volume_name</pre>
+        </div>
+
+        <h2>📊 System Architecture</h2>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+            <pre class="code-block">Internet
+   │
+   ├─── Port 80 (HTTP) ──→ Nginx ──→ Redirect to HTTPS
+   │
+   └─── Port 443 (HTTPS) ──→ Nginx (SSL Termination)
+            │
+            ├──→ n8n.phytolink-venture.com ──→ n8n:5678
+            │
+            └──→ odoo.phytolink-venture.com ──→ odoo:8069
+                                                    │
+                                                    └──→ PostgreSQL:5432
+                                                          │
+                                                          ├─ Database: n8n
+                                                          └─ Database: odoo</pre>
+        </div>
+
+        <h2>🔐 Security Best Practices</h2>
+        <ul>
+            <li><strong>✅ Change all default passwords</strong> in docker-compose.yml</li>
+            <li><strong>✅ Use strong passwords</strong> (minimum 16 characters, mixed case, numbers, symbols)</li>
+            <li><strong>✅ Keep Docker images updated:</strong> <span class="inline-code">docker-compose pull && docker-compose up -d</span></li>
+            <li><strong>✅ Regular backups</strong> of database volumes</li>
+            <li><strong>✅ Monitor logs</strong> for suspicious activity</li>
+            <li><strong>✅ Use SSH tunneling</strong> for database access instead of exposing port 5432</li>
+            <li><strong>✅ Enable firewall</strong> and only open necessary ports</li>
+            <li><strong>✅ SSL certificates auto-renew</strong> every 12 hours (handled by certbot container)</li>
+            <li><strong>✅ Use 2FA</strong> where available (n8n and Odoo support it)</li>
+            <li><strong>✅ Regular security updates:</strong> <span class="inline-code">sudo yum update -y</span></li>
+        </ul>
+
+        <h2>📝 Important Files and Locations</h2>
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Location</th>
+            </tr>
+            <tr>
+                <td>Project Directory</td>
+                <td>/home/ec2-user/n8n-odoo-setup</td>
+            </tr>
+            <tr>
+                <td>Docker Compose Config</td>
+                <td>~/n8n-odoo-setup/docker-compose.yml</td>
+            </tr>
+            <tr>
+                <td>Nginx Config</td>
+                <td>~/n8n-odoo-setup/nginx/conf.d/default.conf</td>
+            </tr>
+            <tr>
+                <td>SSL Certificates</td>
+                <td>Docker volume: certbot_conf</td>
+            </tr>
+            <tr>
+                <td>PostgreSQL Data</td>
+                <td>Docker volume: postgres_data</td>
+            </tr>
+            <tr>
+                <td>n8n Data</td>
+                <td>Docker volume: n8n_data</td>
+            </tr>
+            <tr>
+                <td>Odoo Data</td>
+                <td>Docker volume: odoo_data</td>
+            </tr>
+        </table>
+
+        <h2>🔗 Useful Links</h2>
+        <ul>
+            <li><a href="https://n8n.phytolink-venture.com">n8n Instance</a></li>
+            <li><a href="https://odoo.phytolink-venture.com">Odoo Instance</a></li>
+            <li><a href="https://lightsail.aws.amazon.com/">AWS Lightsail Console</a></li>
+            <li><a href="https://www.namecheap.com">Namecheap (DNS Management)</a></li>
+            <li><a href="https://docs.n8n.io/">n8n Documentation</a></li>
+            <li><a href="https://www.odoo.com/documentation">Odoo Documentation</a></li>
+            <li><a href="https://www.postgresql.org/docs/">PostgreSQL Documentation</a></li>
+            <li><a href="https://docs.docker.com/">Docker Documentation</a></li>
+            <li><a href="https://nginx.org/en/docs/">Nginx Documentation</a></li>
+        </ul>
+
+        <h2>📞 Support and Resources</h2>
+        <div class="credentials-box">
+            <h3>Getting Help</h3>
+            <ul>
+                <li><strong>n8n Community:</strong> <a href="https://community.n8n.io/">https://community.n8n.io/</a></li>
+                <li><strong>Odoo Forum:</strong> <a href="https://www.odoo.com/forum">https://www.odoo.com/forum</a></li>
+                <li><strong>Docker Community:</strong> <a href="https://forums.docker.com/">https://forums.docker.com/</a></li>
+                <li><strong>AWS Support:</strong> Contact through Lightsail console</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h3>✨ Setup Summary</h3>
+            <p>You now have a fully functional, secure infrastructure with:</p>
+            <ul>
+                <li>✅ n8n workflow automation platform</li>
+                <li>✅ Odoo ERP/CRM system</li>
+                <li>✅ Shared PostgreSQL database</li>
+                <li>✅ Nginx reverse proxy with SSL/TLS</li>
+                <li>✅ Auto-renewing SSL certificates from Let's Encrypt</li>
+                <li>✅ All running in Docker containers</li>
+                <li>✅ Custom domain names with HTTPS</li>
+            </ul>
+            <p><strong>Total setup time:</strong> ~30-45 minutes</p>
+            <p><strong>Monthly cost:</strong> AWS Lightsail instance cost only (typically $5-$20/month depending on instance size)</p>
+        </div>
+
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #ecf0f1;">
+
+        <p style="text-align: center; color: #7f8c8d; margin-top: 40px;">
+            <strong>Documentation created:</strong> October 27, 2025<br>
+            <strong>Last updated:</strong> October 27, 2025<br>
+            <strong>Version:</strong> 1.0
+        </p>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">✅ Copied to clipboard!</div>
+
+    <script>
+        function copyCode(button) {
+            // Get the code block
+            const codeBlock = button.nextElementSibling;
+            const code = codeBlock.textContent;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(code).then(() => {
+                // Change button text temporarily
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied!';
+                button.classList.add('copied');
+                
+                // Show toast notification
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('copied');
+                    toast.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                button.innerHTML = '❌ Failed';
+                setTimeout(() => {
+                    button.innerHTML = '📋 Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

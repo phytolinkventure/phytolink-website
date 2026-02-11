@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KWSP Projection Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--bg2:#111620;--bg3:#151925;--bg4:#1a1f2e;--border:#1e2738;--border2:#2a3040;--text:#e8ecf1;--text2:#8a919e;--text3:#5b6b82;--accent:#4fc3f7;--green:#66bb6a;--orange:#ffb74d;--red:#ef5350;--purple:#ce93d8;--blue:#64b5f6;--green2:#81c784}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#0d1117,#151d2b,#0d1117);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:12px}
+.header-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4fc3f7,#7c4dff);display:flex;align-items:center;justify-content:center;font-size:16px}
+.header h1{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.header-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.toggle-sidebar{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--text2);font-size:16px;line-height:1}
+.layout{display:flex;height:calc(100vh - 65px)}
+.sidebar{width:310px;min-width:310px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;transition:all .3s;flex-shrink:0}
+.sidebar.closed{width:0;min-width:0;border:none;overflow:hidden}
+.sidebar-inner{width:310px;padding:16px 18px}
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.section-label.red{color:var(--red)}.section-label.blue{color:var(--accent)}
+.toggle-group{background:var(--bg);border-radius:10px;padding:4px 14px 2px;margin-bottom:18px;border:1px solid #1a2030}
+.toggle-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #1a2030}
+.toggle-row:last-child{border-bottom:none}
+.toggle-btn{flex-shrink:0;width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;transition:background .25s}
+.toggle-btn.on{background:var(--accent)}.toggle-btn.off{background:var(--border2)}
+.toggle-dot{width:16px;height:16px;border-radius:8px;background:#fff;position:absolute;top:3px;transition:left .25s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle-btn.on .toggle-dot{left:19px}.toggle-btn.off .toggle-dot{left:3px}
+.toggle-label{font-size:12px;font-weight:600;transition:color .2s}
+.toggle-label.on{color:var(--text)}.toggle-label.off{color:var(--text3)}
+.toggle-desc{font-size:10px;color:#4a5568;margin-top:2px;line-height:1.4}
+.divider{font-size:11px;font-weight:600;color:var(--text);margin:14px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:14px;transition:opacity .3s}
+.field.disabled{opacity:.35;pointer-events:none}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.field .input-wrap{display:flex;align-items:center;background:var(--bg4);border-radius:8px;border:1px solid var(--border2);overflow:hidden}
+.field .prefix,.field .suffix{padding:8px 12px;color:var(--text3);font-size:13px;font-weight:600;white-space:nowrap}
+.field .prefix{padding-right:0}
+.field input,.field select{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-weight:500;padding:10px 12px;font-family:'JetBrains Mono',monospace;width:100%}
+.field select{cursor:pointer}
+.field select option{background:var(--bg4)}
+.field .hint{font-size:10px;color:var(--text3);margin-top:3px}
+.dividend-box{background:#ffb74d10;border:1px solid #ffb74d33;border-radius:10px;padding:10px 14px;margin-bottom:16px}
+.dividend-title{font-size:11px;font-weight:700;color:var(--orange);margin-bottom:6px}
+.dividend-info{font-size:10px;color:var(--text2);line-height:1.5}
+.quick-targets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.quick-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.quick-btn.active-green{border-color:var(--green);background:#66bb6a18;color:var(--green)}
+.quick-btn.active-orange{border-color:var(--orange);background:#ffb74d18;color:var(--orange)}
+.quick-btn.active-red{border-color:var(--red);background:#ef535018;color:var(--red)}
+.main{flex:1;min-width:0;padding:20px 24px;overflow-y:auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:linear-gradient(135deg,#151925,#1a2035);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat.cyan::before{background:var(--accent)}.stat.cyan{border:1px solid #4fc3f722}
+.stat.purple::before{background:#7c4dff}.stat.purple{border:1px solid #7c4dff22}
+.stat.green::before{background:var(--green)}.stat.green{border:1px solid #66bb6a22}
+.stat.red::before{background:var(--red)}.stat.red{border:1px solid #ef535022}
+.stat.orange::before{background:var(--orange)}.stat.orange{border:1px solid #ffb74d22}
+.stat-label{font-size:11px;color:#7a8599;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.stat-sub{font-size:11px;margin-top:4px;font-weight:500}
+.stat.cyan .stat-sub{color:var(--accent)}.stat.purple .stat-sub{color:#7c4dff}.stat.green .stat-sub{color:var(--green)}.stat.red .stat-sub{color:var(--red)}.stat.orange .stat-sub{color:var(--orange)}
+.pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .25s;user-select:none;border:1px solid var(--border2);background:var(--bg4);color:#3a4555}
+.pill.on{background:#4fc3f715;color:var(--accent);border-color:#4fc3f733}
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg3);border-radius:10px;padding:3px;width:fit-content}
+.tab{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:transparent;color:var(--text3);transition:all .2s}
+.tab.active{background:#4fc3f722;color:var(--accent)}
+.chart-wrap{background:var(--bg2);border-radius:14px;border:1px solid var(--border);padding:20px 16px 16px}
+.table-wrap{background:var(--bg2);border-radius:14px;border:1px solid var(--border);overflow:auto;max-height:500px}
+table{width:100%;border-collapse:collapse;font-size:12px;font-family:'JetBrains Mono',monospace}
+thead tr{background:#151d2b;position:sticky;top:0;z-index:1}
+th{padding:12px 10px;text-align:right;color:var(--text3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+td{padding:10px;text-align:right}
+tr.target-row{background:#66bb6a15;border-left:3px solid var(--green)}
+tr.alt{background:#151d2b33}
+.savings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;padding:8px 14px 14px}
+.savings-card{background:#151d2b;border-radius:8px;padding:8px 12px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.savings-card.current{background:#4fc3f715;border-color:#4fc3f744}
+.savings-card .age{font-size:11px;color:var(--text3);font-weight:600}
+.savings-card.current .age{color:var(--accent)}
+.savings-card .amt{font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace;font-weight:500}
+.savings-card.current .amt{color:var(--text)}
+.footer{margin-top:16px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.6}
+.savings-desc{padding:14px 18px 8px;font-size:13px;color:var(--text2)}
+@media(max-width:768px){.sidebar{position:fixed;z-index:10;height:calc(100vh - 65px);top:65px;left:0}.sidebar.closed{left:-320px}.main{padding:16px 12px}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="toggle-sidebar" id="toggleBtn" onclick="toggleSidebar()">✕</button>
+  <div class="header-icon">📊</div>
+  <div>
+    <h1>KWSP Projection Calculator</h1>
+    <div class="header-sub" id="headerSub">EPF + i-Invest • Starting Feb 2026 • 11 months remaining this year</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="section-label red">🔘 Features</div>
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <button class="toggle-btn on" id="tog_iinvest" onclick="toggleFeature('enableIInvest')"><div class="toggle-dot"></div></button>
+          <div><div class="toggle-label on" id="lbl_iinvest">i-Invest (MIS)</div><div class="toggle-desc">Enable Members Investment Scheme transfers and tracking</div></div>
+        </div>
+        <div class="toggle-row">
+          <button class="toggle-btn on" id="tog_extra" onclick="toggleFeature('enableExtra')"><div class="toggle-dot"></div></button>
+          <div><div class="toggle-label on" id="lbl_extra">Extra Monthly Top-Up</div><div class="toggle-desc">Additional voluntary contribution to Akaun Persaraan</div></div>
+        </div>
+        <div class="toggle-row">
+          <button class="toggle-btn on" id="tog_salary" onclick="toggleFeature('enableSalaryIncrement')"><div class="toggle-dot"></div></button>
+          <div><div class="toggle-label on" id="lbl_salary">Annual Salary Increment</div><div class="toggle-desc">Contribution grows yearly with salary increase</div></div>
+        </div>
+        <div class="toggle-row">
+          <button class="toggle-btn off" id="tog_dividend" onclick="toggleFeature('lastYearDividend')"><div class="toggle-dot"></div></button>
+          <div><div class="toggle-label off" id="lbl_dividend">Last Year Dividend Credited</div><div class="toggle-desc">Has EPF already credited last year's dividend into your balance?</div></div>
+        </div>
+      </div>
+
+      <div id="dividendBox" class="dividend-box">
+        <div class="dividend-title">💡 Dividend Not Yet Credited</div>
+        <div class="dividend-info" style="margin-bottom:8px">Your balances will be adjusted with an estimated dividend before projection starts.</div>
+        <div class="field">
+          <label>Est. Dividend Rate</label>
+          <div class="input-wrap"><input type="number" id="in_dividendRate" value="5.50" step="0.1" min="0" max="15" onchange="updateCfg('lastYearDividendRate',parseFloat(this.value))"><span class="suffix">%</span></div>
+        </div>
+        <div class="dividend-info" id="dividendPreview"></div>
+      </div>
+
+      <div class="section-label blue">⚙ Configuration</div>
+
+      <div class="divider">Profile</div>
+      <div class="field"><label>Current Age</label><div class="input-wrap"><input type="number" id="in_age" value="25" min="18" max="55" onchange="updateCfg('startAge',parseInt(this.value))"><span class="suffix">years</span></div></div>
+      <div class="field"><label>Starting Month</label><div class="input-wrap"><select id="in_month" onchange="updateCfg('startMonth',parseInt(this.value))"></select></div><div class="hint">Projection starts from this month in 2026</div></div>
+
+      <div class="divider">Current Balances</div>
+      <div class="field"><label>Akaun Persaraan (1)</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_a1" value="32500" onchange="updateCfg('akaun1',parseFloat(this.value))"></div><div class="hint" id="hint_a1"></div></div>
+      <div class="field"><label>Akaun Sejahtera (2)</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_a2" value="21000" onchange="updateCfg('akaun2',parseFloat(this.value))"></div><div class="hint" id="hint_a2"></div></div>
+      <div class="field"><label>Akaun Fleksibel (3)</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_a3" value="440" onchange="updateCfg('akaun3',parseFloat(this.value))"></div><div class="hint" id="hint_a3"></div></div>
+      <div class="field" id="field_iinvest"><label>i-Invest Balance</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_iinvest" value="31500" onchange="updateCfg('iInvest',parseFloat(this.value))"></div></div>
+
+      <div class="divider">Contributions</div>
+      <div class="field"><label>EPF Monthly (Employer+Employee)</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_contrib" value="1500" onchange="updateCfg('monthlyContrib',parseFloat(this.value))"></div><div class="hint">Split: 75% Ak1, 15% Ak2, 10% Ak3</div></div>
+      <div class="field" id="field_extra"><label>Extra Monthly Top-Up</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_extra" value="1000" onchange="updateCfg('monthlyExtra',parseFloat(this.value))"></div><div class="hint">Goes 100% to Akaun Persaraan</div></div>
+
+      <div class="divider">Assumptions</div>
+      <div class="field"><label>EPF Average Return</label><div class="input-wrap"><input type="number" id="in_epfReturn" value="5" step="0.5" onchange="updateCfg('epfReturn',parseFloat(this.value)/100)"><span class="suffix">%</span></div></div>
+      <div class="field" id="field_investReturn"><label>i-Invest Average Return</label><div class="input-wrap"><input type="number" id="in_investReturn" value="10" step="0.5" onchange="updateCfg('investReturn',parseFloat(this.value)/100)"><span class="suffix">%</span></div></div>
+      <div class="field" id="field_salaryInc"><label>Annual Salary Increment</label><div class="input-wrap"><input type="number" id="in_salaryInc" value="5" step="0.5" onchange="updateCfg('salaryIncrement',parseFloat(this.value)/100)"><span class="suffix">%</span></div></div>
+      <div class="field" id="field_freq"><label>i-Invest Transfer Frequency</label><div class="input-wrap"><input type="number" id="in_freq" value="6" step="3" min="3" max="12" onchange="updateCfg('transferFrequency',parseInt(this.value))"><span class="suffix">months</span></div><div class="hint">Every N months, transfer excess</div></div>
+
+      <div class="divider">Target</div>
+      <div class="field"><label>Target Amount</label><div class="input-wrap"><span class="prefix">RM</span><input type="number" id="in_target" value="1300000" step="100000" onchange="updateCfg('target',parseFloat(this.value))"></div></div>
+      <div class="quick-targets" id="quickTargets"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stats" id="statsRow"></div>
+    <div class="pills" id="pillsRow"></div>
+    <div class="tabs" id="tabsRow"></div>
+    <div id="content"></div>
+    <div class="footer">
+      <strong style="color:var(--text2)">⚠ Disclaimer:</strong> Projection tool for educational purposes only. Actual returns may vary. EPF dividends are not guaranteed. i-Invest returns depend on fund performance. Basic Savings thresholds revised every 5 years by KWSP. Contribution split: 75% Akaun 1, 15% Akaun 2, 10% Akaun 3. First year calculates from your selected starting month.
+    </div>
+  </div>
+</div>
+
+<script>
+const BASIC_SAVINGS={18:900,19:1100,20:1500,21:1900,22:4000,23:6200,24:8500,25:11000,26:13700,27:16600,28:19600,29:22900,30:26300,31:30000,32:33900,33:38100,34:42400,35:47000,36:51900,37:57000,38:62400,39:68100,40:74000,41:80200,42:86700,43:93600,44:100000,45:108000,46:115000,47:124000,48:132000,49:141000,50:150000,51:160000,52:170000,53:181000,54:192000,55:203000};
+for(let a=56;a<=75;a++)BASIC_SAVINGS[a]=a<=60?203000+(a-55)*Math.floor((270000-203000)/5):270000+(a-60)*15000;
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt=n=>`RM ${n.toLocaleString()}`;
+
+let cfg={startAge:25,startMonth:2,akaun1:32500,akaun2:21000,akaun3:440,iInvest:31500,monthlyContrib:1500,monthlyExtra:1000,salaryIncrement:.05,epfReturn:.05,investReturn:.10,target:1300000,transferFrequency:6,enableIInvest:true,enableExtra:true,enableSalaryIncrement:true,lastYearDividend:false,lastYearDividendRate:5.50};
+let currentTab="chart",chart=null,results=[],reachedAge=null,dividendApplied={a1:0,a2:0,a3:0};
+
+function runProjection(){
+  let a1=cfg.akaun1,a2=cfg.akaun2,a3=cfg.akaun3;
+  let inv=cfg.enableIInvest?cfg.iInvest:0;
+  dividendApplied={a1:0,a2:0,a3:0};
+  if(!cfg.lastYearDividend){
+    const dr=cfg.lastYearDividendRate/100;
+    dividendApplied={a1:Math.round(a1*dr),a2:Math.round(a2*dr),a3:Math.round(a3*dr)};
+    a1+=dividendApplied.a1;a2+=dividendApplied.a2;a3+=dividendApplied.a3;
+  }
+  results=[];reachedAge=null;
+  let contrib=cfg.monthlyContrib,extra=cfg.enableExtra?cfg.monthlyExtra:0;
+  const mEpf=cfg.epfReturn/12,mInv=cfg.investReturn/12;
+  const mFirst=12-(cfg.startMonth-1);
+  let age=cfg.startAge,year=2026,totalM=0;
+
+  const snap=(ml)=>{
+    const total=a1+a2+a3+inv;
+    results.push({age,year,akaun1:Math.round(a1),akaun2:Math.round(a2),akaun3:Math.round(a3),iInvest:Math.round(inv),total:Math.round(total),basicSavings:BASIC_SAVINGS[age]||BASIC_SAVINGS[75],monthlyContrib:Math.round(contrib+(cfg.enableExtra?extra:0)),monthLabel:ml});
+    if(total>=cfg.target&&!reachedAge)reachedAge=age;
+  };
+  snap(MONTHS[cfg.startMonth-1]);
+
+  for(let y=0;y<(75-cfg.startAge+1);y++){
+    const mths=y===0?mFirst:12;
+    for(let m=0;m<mths;m++){
+      a1+=contrib*.75+(cfg.enableExtra?extra:0);a2+=contrib*.15;a3+=contrib*.10;
+      a1*=(1+mEpf);a2*=(1+mEpf);a3*=(1+mEpf);
+      if(cfg.enableIInvest)inv*=(1+mInv);
+      totalM++;
+      if(cfg.enableIInvest&&totalM%cfg.transferFrequency===0&&totalM>0){
+        const bs=BASIC_SAVINGS[age]||BASIC_SAVINGS[75];
+        const el=(a1-bs)*.30;
+        if(el>=1000){a1-=el;inv+=el}
+      }
+    }
+    if(cfg.enableSalaryIncrement){contrib*=(1+cfg.salaryIncrement);if(cfg.enableExtra)extra*=(1+cfg.salaryIncrement)}
+    age++;year++;
+    snap("Jan");
+    if(reachedAge&&age>reachedAge+3)break;
+    if(age>75)break;
+  }
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('closed');
+  document.getElementById('toggleBtn').textContent=sb.classList.contains('closed')?'⚙':'✕';
+}
+
+function toggleFeature(key){
+  cfg[key]=!cfg[key];
+  render();
+}
+
+function updateCfg(key,val){
+  cfg[key]=val;
+  render();
+}
+
+function setTab(t){currentTab=t;renderContent()}
+
+function render(){
+  runProjection();
+  // Update toggles
+  ['enableIInvest','enableExtra','enableSalaryIncrement','lastYearDividend'].forEach(k=>{
+    const map={enableIInvest:'iinvest',enableExtra:'extra',enableSalaryIncrement:'salary',lastYearDividend:'dividend'};
+    const id=map[k];
+    const btn=document.getElementById('tog_'+id);
+    const lbl=document.getElementById('lbl_'+id);
+    btn.className='toggle-btn '+(cfg[k]?'on':'off');
+    lbl.className='toggle-label '+(cfg[k]?'on':'off');
+  });
+
+  // Disabled fields
+  document.getElementById('field_iinvest').className='field'+(cfg.enableIInvest?'':' disabled');
+  document.getElementById('field_extra').className='field'+(cfg.enableExtra?'':' disabled');
+  document.getElementById('field_investReturn').className='field'+(cfg.enableIInvest?'':' disabled');
+  document.getElementById('field_salaryInc').className='field'+(cfg.enableSalaryIncrement?'':' disabled');
+  document.getElementById('field_freq').className='field'+(cfg.enableIInvest?'':' disabled');
+
+  // Dividend box
+  document.getElementById('dividendBox').style.display=cfg.lastYearDividend?'none':'block';
+  const eA1=cfg.lastYearDividend?cfg.akaun1:cfg.akaun1+dividendApplied.a1;
+  const eA2=cfg.lastYearDividend?cfg.akaun2:cfg.akaun2+dividendApplied.a2;
+  const eA3=cfg.lastYearDividend?cfg.akaun3:cfg.akaun3+dividendApplied.a3;
+  document.getElementById('dividendPreview').innerHTML=`Akaun 1: +${fmt(dividendApplied.a1)} → ${fmt(eA1)}<br>Akaun 2: +${fmt(dividendApplied.a2)} → ${fmt(eA2)}<br>Akaun 3: +${fmt(dividendApplied.a3)} → ${fmt(eA3)}`;
+  document.getElementById('hint_a1').textContent=cfg.lastYearDividend?'':`After dividend: ${fmt(eA1)}`;
+  document.getElementById('hint_a2').textContent=cfg.lastYearDividend?'':`After dividend: ${fmt(eA2)}`;
+  document.getElementById('hint_a3').textContent=cfg.lastYearDividend?'':`After dividend: ${fmt(eA3)}`;
+
+  // Header sub
+  const rem=12-(cfg.startMonth-1);
+  document.getElementById('headerSub').textContent=`EPF + i-Invest • Starting ${MONTHS[cfg.startMonth-1]} 2026 • ${rem} months remaining this year`;
+
+  // Stats
+  const startTotal=eA1+eA2+eA3+(cfg.enableIInvest?cfg.iInvest:0);
+  const yrs=reachedAge?reachedAge-cfg.startAge:null;
+  const rYear=reachedAge?2026+yrs:null;
+  const finalRow=results.find(r=>r.age===reachedAge);
+  const targetLabel=cfg.target===390000?'Basic Savings':cfg.target===650000?'Adequate Savings':cfg.target===1300000?'Enhanced Savings':'Custom';
+
+  let statsHTML=`
+    <div class="stat cyan"><div class="stat-label">Starting Total</div><div class="stat-value">${fmt(startTotal)}</div><div class="stat-sub">From ${MONTHS[cfg.startMonth-1]} 2026${!cfg.lastYearDividend?' (incl. est. dividend)':''}</div></div>
+    <div class="stat purple"><div class="stat-label">Target</div><div class="stat-value">${fmt(cfg.target)}</div><div class="stat-sub">${targetLabel}</div></div>
+    <div class="stat ${reachedAge?'green':'red'}"><div class="stat-label">${reachedAge?'Reached At':'Status'}</div><div class="stat-value">${reachedAge?'Age '+reachedAge:'Not reached'}</div><div class="stat-sub">${reachedAge?`Year ${rYear} • ${yrs} yrs from now`:'Try higher contributions'}</div></div>`;
+  if(finalRow){
+    const sub=cfg.enableIInvest?`i-Invest: ${fmt(finalRow.iInvest)} (${Math.round(finalRow.iInvest/finalRow.total*100)}%)`:`EPF: ${fmt(finalRow.akaun1+finalRow.akaun2+finalRow.akaun3)}`;
+    statsHTML+=`<div class="stat orange"><div class="stat-label">At Target</div><div class="stat-value">${fmt(finalRow.total)}</div><div class="stat-sub">${sub}</div></div>`;
+  }
+  document.getElementById('statsRow').innerHTML=statsHTML;
+
+  // Pills
+  const pills=[{key:'enableIInvest',label:'i-Invest',icon:'📈'},{key:'enableExtra',label:'Extra Top-Up',icon:'💰'},{key:'enableSalaryIncrement',label:'Salary Increment',icon:'📊'},{key:'lastYearDividend',label:'Dividend Credited',icon:'🏦'}];
+  document.getElementById('pillsRow').innerHTML=pills.map(p=>`<span class="pill ${cfg[p.key]?'on':''}" onclick="toggleFeature('${p.key}')">${p.icon} ${p.label} ${cfg[p.key]?'ON':'OFF'}</span>`).join('');
+
+  // Tabs
+  document.getElementById('tabsRow').innerHTML=['chart','table','savings'].map(t=>{
+    const labels={chart:'📈 Chart',table:'📋 Table',savings:'🏦 Simpanan Asas'};
+    return `<button class="tab ${currentTab===t?'active':''}" onclick="setTab('${t}')">${labels[t]}</button>`;
+  }).join('');
+
+  // Quick targets
+  const targets=[{label:'Basic (390K)',val:390000,cls:'green'},{label:'Adequate (650K)',val:650000,cls:'orange'},{label:'Enhanced (1.3M)',val:1300000,cls:'red'}];
+  document.getElementById('quickTargets').innerHTML=targets.map(t=>`<button class="quick-btn ${cfg.target===t.val?'active-'+t.cls:''}" onclick="updateCfg('target',${t.val})">${t.label}</button>`).join('');
+
+  renderContent();
+}
+
+function renderContent(){
+  const el=document.getElementById('content');
+  if(currentTab==='chart')renderChart(el);
+  else if(currentTab==='table')renderTable(el);
+  else renderSavings(el);
+  // Re-highlight active tab
+  document.querySelectorAll('.tab').forEach(t=>{
+    const key=t.textContent.includes('Chart')?'chart':t.textContent.includes('Table')?'table':'savings';
+    t.className='tab'+(currentTab===key?' active':'');
+  });
+}
+
+function renderChart(el){
+  el.innerHTML='<div class="chart-wrap"><canvas id="myChart" height="400"></canvas></div>';
+  const canvas=document.getElementById('myChart');
+  const ctx=canvas.getContext('2d');
+  if(chart)chart.destroy();
+
+  const labels=results.map(r=>r.age);
+  const datasets=[
+    {label:'Akaun 1',data:results.map(r=>r.akaun1),backgroundColor:'rgba(100,181,246,0.15)',borderColor:'#64b5f6',borderWidth:1.5,fill:true,tension:0.3},
+    {label:'Akaun 2',data:results.map(r=>r.akaun2),backgroundColor:'rgba(129,199,132,0.1)',borderColor:'#81c784',borderWidth:1.5,fill:true,tension:0.3},
+    {label:'Akaun 3',data:results.map(r=>r.akaun3),backgroundColor:'rgba(255,183,77,0.1)',borderColor:'#ffb74d',borderWidth:1.5,fill:true,tension:0.3},
+  ];
+  if(cfg.enableIInvest){
+    datasets.push({label:'i-Invest',data:results.map(r=>r.iInvest),backgroundColor:'rgba(206,147,216,0.2)',borderColor:'#ce93d8',borderWidth:2,fill:true,tension:0.3});
+  }
+  datasets.push({label:'Total',data:results.map(r=>r.total),backgroundColor:'transparent',borderColor:'#4fc3f7',borderWidth:2.5,borderDash:[],fill:false,tension:0.3,pointRadius:results.map(r=>r.age===reachedAge?6:2),pointBackgroundColor:results.map(r=>r.age===reachedAge?'#66bb6a':'#4fc3f7')});
+
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8a919e',font:{size:11}}},
+        tooltip:{
+          backgroundColor:'#1a1f2e',borderColor:'#2a3548',borderWidth:1,titleColor:'#e8ecf1',bodyColor:'#ccc',
+          callbacks:{label:ctx=>`${ctx.dataset.label}: RM ${ctx.parsed.y.toLocaleString()}`}
+        },
+        annotation:undefined
+      },
+      scales:{
+        x:{ticks:{color:'#5b6b82',font:{size:11}},grid:{color:'#1e2738'},title:{display:true,text:'Age',color:'#5b6b82'}},
+        y:{ticks:{color:'#5b6b82',font:{size:11},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},grid:{color:'#1e2738'}}
+      }
+    },
+    plugins:[{
+      id:'targetLine',
+      afterDraw(chart){
+        const yScale=chart.scales.y;
+        const xScale=chart.scales.x;
+        const ctx=chart.ctx;
+        // Target line
+        const yPx=yScale.getPixelForValue(cfg.target);
+        if(yPx>=yScale.top&&yPx<=yScale.bottom){
+          ctx.save();ctx.setLineDash([8,4]);ctx.strokeStyle='#ef535088';ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(xScale.left,yPx);ctx.lineTo(xScale.right,yPx);ctx.stroke();
+          ctx.fillStyle='#ef5350';ctx.font='bold 11px Inter';ctx.textAlign='right';
+          ctx.fillText(`Target ${fmt(cfg.target)}`,xScale.right-4,yPx-6);ctx.restore();
+        }
+        // Reached line
+        if(reachedAge){
+          const idx=results.findIndex(r=>r.age===reachedAge);
+          if(idx>=0){
+            const xPx=xScale.getPixelForValue(idx);
+            ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#66bb6a88';ctx.lineWidth=1.5;
+            ctx.beginPath();ctx.moveTo(xPx,yScale.top);ctx.lineTo(xPx,yScale.bottom);ctx.stroke();
+            ctx.fillStyle='#66bb6a';ctx.font='bold 11px Inter';ctx.textAlign='center';
+            ctx.fillText(`Age ${reachedAge}`,xPx,yScale.top-6);ctx.restore();
+          }
+        }
+      }
+    }]
+  });
+}
+
+function renderTable(el){
+  const iInv=cfg.enableIInvest;
+  let html='<div class="table-wrap"><table><thead><tr>';
+  ['Year','From','Age','Akaun 1','Akaun 2','Akaun 3',...(iInv?['i-Invest']:[]),'Total','Monthly'].forEach(h=>html+=`<th>${h}</th>`);
+  html+='</tr></thead><tbody>';
+  results.forEach((r,i)=>{
+    const isT=r.age===reachedAge;
+    const cls=isT?'target-row':i%2?'alt':'';
+    html+=`<tr class="${cls}">`;
+    html+=`<td style="color:var(--text2)">${r.year}</td>`;
+    html+=`<td style="color:var(--text3);font-size:11px">${r.monthLabel}</td>`;
+    html+=`<td style="color:${isT?'var(--green)':'var(--text)'};font-weight:${isT?700:500}">${r.age}</td>`;
+    html+=`<td style="color:var(--blue)">${r.akaun1.toLocaleString()}</td>`;
+    html+=`<td style="color:var(--green2)">${r.akaun2.toLocaleString()}</td>`;
+    html+=`<td style="color:var(--orange)">${r.akaun3.toLocaleString()}</td>`;
+    if(iInv)html+=`<td style="color:var(--purple)">${r.iInvest.toLocaleString()}</td>`;
+    html+=`<td style="color:${isT?'var(--green)':'var(--text)'};font-weight:700">${r.total.toLocaleString()}${isT?' ✅':''}</td>`;
+    html+=`<td style="color:var(--text3)">${r.monthlyContrib.toLocaleString()}</td>`;
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
+}
+
+function renderSavings(el){
+  let html=`<div class="table-wrap" style="padding:4px"><div class="savings-desc">Simpanan Asas by age (effective 1 Jan 2026). Your Akaun Persaraan must exceed this before transferring to i-Invest.</div><div class="savings-grid">`;
+  for(let age=18;age<=55;age++){
+    const cur=age===cfg.startAge;
+    html+=`<div class="savings-card${cur?' current':''}"><span class="age">Age ${age}</span><span class="amt">${BASIC_SAVINGS[age].toLocaleString()}</span></div>`;
+  }
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+
+// Init month select
+const monthSelect=document.getElementById('in_month');
+MONTHS.forEach((m,i)=>{
+  const opt=document.createElement('option');
+  opt.value=i+1;opt.textContent=`${m} (${12-i} months left)`;
+  monthSelect.appendChild(opt);
+});
+monthSelect.value=cfg.startMonth;
+
+render();
+</script>
+</body>
+</html>

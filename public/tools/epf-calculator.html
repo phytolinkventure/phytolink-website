@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPF + Investment Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(to br, #eff6ff, #e0e7ff);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            color: white;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .load-example-btn {
+            color: #2563eb;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .load-example-btn:hover {
+            color: #1e40af;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group small {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .checkbox-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-section.purple {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            color: #065f46;
+            margin-bottom: 4px;
+        }
+
+        .checkbox-section.purple .checkbox-label {
+            color: #581c87;
+        }
+
+        .checkbox-description {
+            font-size: 14px;
+            color: #047857;
+        }
+
+        .checkbox-section.purple .checkbox-description {
+            color: #7c3aed;
+        }
+
+        .investment-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+            padding-left: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #1d4ed8, #4338ca);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .result-card {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .result-main {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-subtitle {
+            color: #d1fae5;
+            margin-bottom: 16px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .result-item-label {
+            color: #d1fae5;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .result-item-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e40af;
+            margin-bottom: 12px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .info-grid span:first-child {
+            color: #1e40af;
+        }
+
+        .info-grid span:last-child {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .table-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .table-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f9fafb;
+            z-index: 1;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th:not(:first-child) {
+            text-align: right;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        td:not(:first-child) {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .target-row {
+            background: #f0fdf4 !important;
+            color: #065f46;
+            font-weight: 600;
+        }
+
+        .epf-amount {
+            color: #2563eb;
+        }
+
+        .investment-amount {
+            color: #7c3aed;
+        }
+
+        .tips-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .tips-box h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .tips-box ul {
+            list-style: none;
+            font-size: 14px;
+            color: #b45309;
+        }
+
+        .tips-box li {
+            margin-bottom: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.3;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EPF + Investment Calculator</h1>
+            <p>Plan your EPF savings with optional high-return investment allocations</p>
+        </div>
+
+        <div class="content">
+            <div class="section-header">
+                <h2 class="section-title">Enter Your Details</h2>
+                <button class="load-example-btn" onclick="loadExample()">Load Example Data</button>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Current EPF Balance (RM) *</label>
+                    <input type="number" id="currentBalance" placeholder="e.g., 75000">
+                </div>
+                <div class="form-group">
+                    <label>Starting Month *</label>
+                    <select id="startMonth">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <small>Month you start calculating from</small>
+                </div>
+                <div class="form-group">
+                    <label>Monthly Salary (RM) *</label>
+                    <input type="number" id="monthlySalary" placeholder="e.g., 4000">
+                </div>
+                <div class="form-group">
+                    <label>Employer Contribution (%) *</label>
+                    <input type="number" id="employerContribution" placeholder="e.g., 12">
+                </div>
+                <div class="form-group">
+                    <label>Employee Contribution (%) *</label>
+                    <input type="number" id="employeeContribution" placeholder="e.g., 11">
+                </div>
+                <div class="form-group">
+                    <label>Annual Bonus (months) *</label>
+                    <input type="number" step="0.1" id="bonusMonths" placeholder="e.g., 1">
+                </div>
+                <div class="form-group">
+                    <label>EPF Dividend Rate (%) *</label>
+                    <input type="number" step="0.1" id="dividendRate" placeholder="e.g., 5">
+                </div>
+                <div class="form-group">
+                    <label>Annual Salary Increment (%) *</label>
+                    <input type="number" step="0.1" id="salaryIncrement" placeholder="e.g., 5">
+                </div>
+                <div class="form-group">
+                    <label>Target Amount (RM) *</label>
+                    <input type="number" id="targetAmount" placeholder="e.g., 1000000">
+                </div>
+            </div>
+
+            <div class="checkbox-section">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="contributionsAtStart" checked>
+                    <div>
+                        <div class="checkbox-label">Contributions Made at Beginning of Year</div>
+                        <div class="checkbox-description">If checked, your annual contributions are added at the start of each year and earn full returns. If unchecked, contributions are added at the end of the year (only existing balance earns returns). Starting balance always earns returns.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkbox-section purple">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="useHighInvestment">
+                    <div>
+                        <div class="checkbox-label">Enable High-Return Investment Strategy</div>
+                        <div class="checkbox-description">Allocate a portion of your EPF balance annually to higher-return investments</div>
+                    </div>
+                </div>
+                <div id="investmentFields" class="investment-fields hidden">
+                    <div class="form-group">
+                        <label>Annual Allocation to Investment (%) *</label>
+                        <input type="number" step="0.1" id="highInvestmentAllocation" placeholder="e.g., 30">
+                        <small>% of EPF balance moved to investment each year</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Investment Return Rate (%) *</label>
+                        <input type="number" step="0.1" id="highInvestmentReturn" placeholder="e.g., 10">
+                        <small>Expected annual return on investments</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="calculate()">Calculate My Journey</button>
+                <button class="btn btn-secondary hidden" id="resetBtn" onclick="resetForm()">Reset Form</button>
+            </div>
+
+            <div id="resultsSection" class="results-section">
+                <h2 class="section-title" style="margin-bottom: 20px;">Your Results</h2>
+
+                <div class="result-card">
+                    <div class="result-main"><span id="yearsToTarget">0</span> Years</div>
+                    <div class="result-subtitle">to reach <span id="targetDisplay">RM 0</span></div>
+                    <div class="result-grid">
+                        <div>
+                            <div class="result-item-label">Total Balance</div>
+                            <div class="result-item-value" id="finalTotal">RM 0</div>
+                        </div>
+                        <div id="epfBalanceDiv" class="hidden">
+                            <div class="result-item-label">EPF Balance</div>
+                            <div class="result-item-value" id="finalEPF">RM 0</div>
+                        </div>
+                        <div id="investmentBalanceDiv" class="hidden">
+                            <div class="result-item-label">Investment Balance</div>
+                            <div class="result-item-value" id="finalInvestment">RM 0</div>
+                        </div>
+                        <div>
+                            <div class="result-item-label">Final Salary</div>
+                            <div class="result-item-value" id="finalSalary">RM 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h3>Current Contribution Summary</h3>
+                    <div class="info-grid">
+                        <span>Total Contribution Rate:</span>
+                        <span id="totalRate">0%</span>
+                        <span>Monthly Contribution:</span>
+                        <span id="monthlyContrib">RM 0</span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">Progress Milestones</div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Balance</th>
+                                    <th id="epfHeader" class="hidden">EPF</th>
+                                    <th id="investmentHeader" class="hidden">Investment</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </thead>
+                            <tbody id="milestonesTable">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tips-box">
+                    <h3 id="tipsTitle">Pro Tips to Accelerate Growth</h3>
+                    <ul id="tipsList">
+                        <li>• Consider making voluntary contributions to boost your balance faster</li>
+                        <li>• Higher contribution rates significantly accelerate your growth</li>
+                        <li>• EPF dividends have historically averaged 5-6% annually</li>
+                        <li>• Regular salary increments compound significantly over time</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <p style="font-size: 18px;">Fill in your details above and click "Calculate" to see your projection</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set current month as default
+        window.addEventListener('DOMContentLoaded', function() {
+            const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11
+            document.getElementById('startMonth').value = currentMonth.toString();
+        });
+
+        // Toggle investment fields
+        document.getElementById('useHighInvestment').addEventListener('change', function(e) {
+            const fields = document.getElementById('investmentFields');
+            if (e.target.checked) {
+                fields.classList.remove('hidden');
+            } else {
+                fields.classList.add('hidden');
+            }
+        });
+
+        function formatCurrency(amount) {
+            return 'RM ' + Math.round(amount).toLocaleString();
+        }
+
+        function loadExample() {
+            const currentMonth = new Date().getMonth() + 1;
+            document.getElementById('currentBalance').value = '78000';
+            document.getElementById('startMonth').value = currentMonth.toString();
+            document.getElementById('monthlySalary').value = '5700';
+            document.getElementById('employerContribution').value = '12';
+            document.getElementById('employeeContribution').value = '11';
+            document.getElementById('bonusMonths').value = '1';
+            document.getElementById('dividendRate').value = '5';
+            document.getElementById('salaryIncrement').value = '5';
+            document.getElementById('targetAmount').value = '1000000';
+            document.getElementById('contributionsAtStart').checked = true;
+            document.getElementById('useHighInvestment').checked = true;
+            document.getElementById('investmentFields').classList.remove('hidden');
+            document.getElementById('highInvestmentAllocation').value = '30';
+            document.getElementById('highInvestmentReturn').value = '10';
+        }
+
+        function resetForm() {
+            document.getElementById('currentBalance').value = '';
+            document.getElementById('startMonth').value = '1';
+            document.getElementById('monthlySalary').value = '';
+            document.getElementById('employerContribution').value = '';
+            document.getElementById('employeeContribution').value = '';
+            document.getElementById('bonusMonths').value = '';
+            document.getElementById('dividendRate').value = '';
+            document.getElementById('salaryIncrement').value = '';
+            document.getElementById('targetAmount').value = '';
+            document.getElementById('contributionsAtStart').checked = true;
+            document.getElementById('useHighInvestment').checked = false;
+            document.getElementById('investmentFields').classList.add('hidden');
+            document.getElementById('highInvestmentAllocation').value = '';
+            document.getElementById('highInvestmentReturn').value = '';
+            document.getElementById('resultsSection').classList.remove('visible');
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('resetBtn').classList.add('hidden');
+        }
+
+        function calculate() {
+            // Get values
+            const currentBalance = parseFloat(document.getElementById('currentBalance').value);
+            const startMonth = parseInt(document.getElementById('startMonth').value);
+            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value);
+            const employerContribution = parseFloat(document.getElementById('employerContribution').value);
+            const employeeContribution = parseFloat(document.getElementById('employeeContribution').value);
+            const bonusMonths = parseFloat(document.getElementById('bonusMonths').value);
+            const dividendRate = parseFloat(document.getElementById('dividendRate').value);
+            const salaryIncrement = parseFloat(document.getElementById('salaryIncrement').value);
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value);
+            const contributionsAtStart = document.getElementById('contributionsAtStart').checked;
+            const useHighInvestment = document.getElementById('useHighInvestment').checked;
+            const highInvestmentAllocation = useHighInvestment ? parseFloat(document.getElementById('highInvestmentAllocation').value) : 0;
+            const highInvestmentReturn = useHighInvestment ? parseFloat(document.getElementById('highInvestmentReturn').value) : 0;
+
+            // Validate
+            if (isNaN(currentBalance) || isNaN(monthlySalary) || isNaN(employerContribution) || 
+                isNaN(employeeContribution) || isNaN(bonusMonths) || isNaN(dividendRate) || 
+                isNaN(salaryIncrement) || isNaN(targetAmount)) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (useHighInvestment && (isNaN(highInvestmentAllocation) || isNaN(highInvestmentReturn))) {
+                alert('Please fill in investment allocation and return rate');
+                return;
+            }
+
+            // Calculate
+            let epfBalance = currentBalance;
+            let investmentBalance = 0;
+            let salary = monthlySalary;
+            let year = 0;
+            const milestones = [];
+            const remainingMonths = 13 - startMonth;
+
+            while ((epfBalance + investmentBalance) < targetAmount && year < 50) {
+                year++;
+
+                // Calculate contributions
+                let monthlyContributions;
+                let bonusContribution;
+
+                if (year === 1) {
+                    monthlyContributions = salary * ((employerContribution + employeeContribution) / 100) * remainingMonths;
+                    bonusContribution = (startMonth <= 12) ? salary * bonusMonths * ((employerContribution + employeeContribution) / 100) : 0;
+                } else {
+                    monthlyContributions = salary * ((employerContribution + employeeContribution) / 100) * 12;
+                    bonusContribution = salary * bonusMonths * ((employerContribution + employeeContribution) / 100);
+                }
+
+                const totalYearlyContributions = monthlyContributions + bonusContribution;
+
+                // Allocate existing balance
+                if (useHighInvestment) {
+                    const amountToInvest = epfBalance * (highInvestmentAllocation / 100);
+                    epfBalance -= amountToInvest;
+                    investmentBalance += amountToInvest;
+                }
+
+                // Handle contributions and returns
+                if (contributionsAtStart) {
+                    epfBalance += totalYearlyContributions;
+
+                    if (useHighInvestment) {
+                        const epfDividend = epfBalance * (dividendRate / 100);
+                        epfBalance += epfDividend;
+                        const investmentReturn = investmentBalance * (highInvestmentReturn / 100);
+                        investmentBalance += investmentReturn;
+                    } else {
+                        const epfDividend = epfBalance * (dividendRate / 100);
+                        epfBalance += epfDividend;
+                    }
+                } else {
+                    if (useHighInvestment) {
+                        const epfDividend = epfBalance * (dividendRate / 100);
+                        epfBalance += epfDividend;
+                        const investmentReturn = investmentBalance * (highInvestmentReturn / 100);
+                        investmentBalance += investmentReturn;
+                    } else {
+                        const epfDividend = epfBalance * (dividendRate / 100);
+                        epfBalance += epfDividend;
+                    }
+                    epfBalance += totalYearlyContributions;
+                }
+
+                const totalBalance = epfBalance + investmentBalance;
+
+                // Store milestones
+                if (year <= 5 || year % 5 === 0 || totalBalance > targetAmount * 0.8) {
+                    milestones.push({
+                        year,
+                        epfBalance: Math.round(epfBalance),
+                        investmentBalance: Math.round(investmentBalance),
+                        totalBalance: Math.round(totalBalance),
+                        salary: Math.round(salary)
+                    });
+                }
+
+                salary = salary * (1 + salaryIncrement / 100);
+
+                if (totalBalance >= targetAmount) {
+                    break;
+                }
+            }
+
+            // Display results
+            const finalTotalBalance = epfBalance + investmentBalance;
+            const totalRate = employerContribution + employeeContribution;
+            const monthlyContrib = monthlySalary * (totalRate / 100);
+
+            document.getElementById('yearsToTarget').textContent = year;
+            document.getElementById('targetDisplay').textContent = formatCurrency(targetAmount);
+            document.getElementById('finalTotal').textContent = formatCurrency(finalTotalBalance);
+            document.getElementById('finalSalary').textContent = formatCurrency(salary / (1 + salaryIncrement / 100));
+            document.getElementById('totalRate').textContent = totalRate + '%';
+            document.getElementById('monthlyContrib').textContent = formatCurrency(monthlyContrib);
+
+            // Show/hide investment-specific fields
+            if (useHighInvestment) {
+                document.getElementById('finalEPF').textContent = formatCurrency(epfBalance);
+                document.getElementById('finalInvestment').textContent = formatCurrency(investmentBalance);
+                document.getElementById('epfBalanceDiv').classList.remove('hidden');
+                document.getElementById('investmentBalanceDiv').classList.remove('hidden');
+                document.getElementById('epfHeader').classList.remove('hidden');
+                document.getElementById('investmentHeader').classList.remove('hidden');
+
+                // Update tips
+                document.getElementById('tipsTitle').textContent = 'Investment Strategy Tips';
+                document.getElementById('tipsList').innerHTML = `
+                    <li>• Higher investment returns accelerate wealth building significantly</li>
+                    <li>• Consider diversified portfolios (stocks, ETFs, real estate) for 8-12% returns</li>
+                    <li>• Balance risk with your time horizon and risk tolerance</li>
+                    <li>• Review and rebalance your portfolio annually</li>
+                `;
+            } else {
+                document.getElementById('epfBalanceDiv').classList.add('hidden');
+                document.getElementById('investmentBalanceDiv').classList.add('hidden');
+                document.getElementById('epfHeader').classList.add('hidden');
+                document.getElementById('investmentHeader').classList.add('hidden');
+
+                document.getElementById('tipsTitle').textContent = 'Pro Tips to Accelerate Growth';
+                document.getElementById('tipsList').innerHTML = `
+                    <li>• Consider making voluntary contributions to boost your balance faster</li>
+                    <li>• Higher contribution rates significantly accelerate your growth</li>
+                    <li>• EPF dividends have historically averaged 5-6% annually</li>
+                    <li>• Regular salary increments compound significantly over time</li>
+                `;
+            }
+
+            // Populate table
+            const tbody = document.getElementById('milestonesTable');
+            tbody.innerHTML = '';
+            milestones.forEach(m => {
+                const isTarget = m.totalBalance >= targetAmount;
+                const row = document.createElement('tr');
+                row.className = isTarget ? 'target-row' : '';
+                
+                let html = `<td>Year ${m.year}${isTarget ? ' 🎯' : ''}</td>`;
+                html += `<td>${formatCurrency(m.totalBalance)}</td>`;
+                if (useHighInvestment) {
+                    html += `<td class="epf-amount">${formatCurrency(m.epfBalance)}</td>`;
+                    html += `<td class="investment-amount">${formatCurrency(m.investmentBalance)}</td>`;
+                }
+                html += `<td>${formatCurrency(m.salary)}</td>`;
+                
+                row.innerHTML = html;
+                tbody.appendChild(row);
+            });
+
+            // Show results
+            document.getElementById('resultsSection').classList.add('visible');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resetBtn').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
